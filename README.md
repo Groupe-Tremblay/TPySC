@@ -10,8 +10,7 @@ A Python library that allows the computation of Hubbard model related functions 
 - [Documentation and tutorials](#documentation-and-tutorials)
 - [Examples](#examples)
 - [Tests](#tests)
-- [Citations](#Citations)
-- [TODO](#TODO)
+- [Licence and citation](#license-and-citation)
 
 
 ## Installation
@@ -20,14 +19,14 @@ This package will be soon available on PyPI.
 Meanwhile, you can install it by cloning this repository and using pip:
 
 ```bash
-git clone https://github.com/amstremblay/TPSC
-cd TPSC
+git clone https://github.com/Groupe-Tremblay/TPySC.git
+cd TPySC
 pip install .
 ```
 
 ## Documentation and tutorials
 
-Online documentation is living on ReadTheDocs: [https://tpsc.readthedocs.io](https://tpsc.readthedocs.io)
+See the [online documentation](https://groupe-tremblay.github.io/TPySC/).
 
 Documentation can also be build locally with the sources located in the ``docs`` folder.
 To build the documentation locally:
@@ -67,19 +66,11 @@ pytest
 Every test should pass.
 If not, please create an issue with the output of the above code and a description of your system.
 
-## Citations
+
+## License and citation
 
 See About_TPSC.rst
 
-## TODO
-
-* Release on PyPi
-* Automated tests with `pytest`
-* More examples
-* Inclure TPSC+ ?
-* Inclure binding avec TRIQS ?
-
-## License and citation
 This software is released under the MIT License. See LICENSE.txt for details.
 
 If you find the intermediate representation, sparse sampling, or this software useful in your research, please consider citing the following papers:
