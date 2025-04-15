@@ -1,4 +1,4 @@
-import TPSC
+import tpysc
 
 # Pack the TPSC input parameters into a dictionary
 parameters = {
@@ -14,7 +14,7 @@ parameters = {
     "IR_tol" : 1e-12          # # for IR basis, tolerance of intermediate representation
 }
 
-tpsc = TPSC.TPSC(**parameters) #Note: the "**" expands the dictionary
+tpsc = tpysc.TPSC(**parameters) #Note: the "**" expands the dictionary
 out = tpsc.run()
 tpsc.printResults()
 tpsc.writeResultsJSON("main_results.json")

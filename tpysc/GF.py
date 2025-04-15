@@ -1,7 +1,7 @@
 from scipy.optimize import brentq
 
-from TPSC.Dispersions import *
-from TPSC.Mesh import *
+from tpysc.Dispersions import *
+from tpysc.Mesh import *
 
 """
 Date: June 23, 2023

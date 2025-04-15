@@ -1,6 +1,10 @@
+[build-system]
+requires = ["setuptools>=64.0.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "TPSC"
-version = "0.0.1"
+name = "tpysc"
+version = "0.1.0"
 authors = [
     {name = "André-Marie Tremblay", email = "andre-marie.tremblay@usherbrooke.ca"},
     {name = "Camille Lahaie", email = "camille.lahaie@usherbrooke.ca"},
@@ -24,8 +28,7 @@ dependencies = [
     "matplotlib",
     "numpy",
     "scipy",
-    "sparse_ir",
-    "xprec",
+    "sparse_ir[xprec]",
 ]
 
 [project.optional-dependencies]

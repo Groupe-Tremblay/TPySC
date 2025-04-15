@@ -1,4 +1,4 @@
-import TPSC
+import tpysc
 import numpy as np
 
 # Pack the TPSC input parameters into a dictionary
@@ -16,7 +16,7 @@ parameters = {
 }
 
 # Do the TPSC calculation
-tpsc = TPSC.TPSC(**parameters)
+tpsc = tpysc.TPSC(**parameters)
 tpsc.run()
 tpsc.printResults()
 mesh = tpsc.mesh
