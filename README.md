@@ -71,7 +71,7 @@ If not, please create an issue with the output of the above code and a descripti
 
 See About_TPSC.rst
 
-This software is released under the MIT License. See LICENSE.txt for details.
+This software is released under the MIT License. See [LICENSE](LICENSE) for details.
 
 If you find the intermediate representation, sparse sampling, or this software useful in your research, please consider citing the following papers:
 

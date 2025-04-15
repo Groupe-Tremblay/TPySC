@@ -16,7 +16,7 @@ authors = [
 description = "A Python library that allows the computation of Hubbard model related functions and quantities (such as the self-energy and Green's function) using the Two-Particle-Self-Consistent (TPSC) approach first described in Vick and Tremblay (1997). "
 readme = "README.md"
 requires-python = ">=3.6"
-license = {text = "TODO"}
+license = {text = "MIT"}
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Natural Language :: English",
