@@ -31,13 +31,13 @@ class Mesh2D:
 
         # ek mesh
         self.ek_ = np.tensordot(np.ones(len(self.iwn_f)), self.ek, axes=0)
-    
+
     def smpl_obj(self, statistics):
         """ Return sampling object for a given statistic """
         smpl_tau = {'F': self.IR_basis_set.smpl_tau_f, 'B': self.IR_basis_set.smpl_tau_b}[statistics]
         smpl_wn  = {'F': self.IR_basis_set.smpl_wn_f,  'B': self.IR_basis_set.smpl_wn_b }[statistics]
         return smpl_tau, smpl_wn
-    
+
     def tau_to_wn(self, statistics, obj_tau):
         """ Fourier transform from tau to iw_n via IR basis """
         smpl_tau, smpl_wn = self.smpl_obj(statistics)
@@ -60,7 +60,7 @@ class Mesh2D:
         obj_r = np.fft.ifftn(obj_k,axes=(1,2))
         obj_r = obj_r.reshape(-1, self.nk)
         return obj_r
-    
+
     def k_to_mr(self,obj_k):
         """ Fourier transform from k-space to real space (with a - sign) """
         obj_k = obj_k.reshape(-1, self.nk1, self.nk2)
@@ -74,13 +74,13 @@ class Mesh2D:
         obj_k = np.fft.fftn(obj_r,axes=(1,2))
         obj_k = obj_k.reshape(-1, self.nk)
         return obj_k
-    
+
     def get_specific_wn(self, statistics, obj_wn, n_array):
         """
         Routine that takes a sparsely-sampled wn object and a list of
         matsubara frequency indices (n=0, ±1, ±2, ...) and evaluates the
         object at those frequencies. If obj_wn is multi-dimensional, it is
-        assumed that the wn axis is the first one. 
+        assumed that the wn axis is the first one.
         """
         # We make sure the n_array is a numpy array of integers. If not, we
         # convert if to that (if possible)
@@ -114,7 +114,7 @@ class Mesh2D:
 
         # We remove any length-one axis from the resulting array:
         return np.squeeze(calculated_obj_wn)
-    
+
     def _lagrange_extrapolation_zero_freq_nth_order(self, xs, ys):
         """
         Routine that evaluates the Lagrange polynomial passing through the points
@@ -143,7 +143,7 @@ class Mesh2D:
         frequencies_interpolation = (2*indices+1)*np.pi*self.T
 
         evaluated_data = self.get_specific_wn('F', obj_wn, indices)
-        
+
         # We use our routine to evaluate the zero-frequency correlation function
         return self._lagrange_extrapolation_zero_freq_nth_order(frequencies_interpolation, evaluated_data)
 

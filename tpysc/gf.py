@@ -1,13 +1,12 @@
 from scipy.optimize import brentq
 
-from tpysc.Dispersions import *
-from tpysc.Mesh import *
+from tpysc.mesh import Mesh2D
 
 """
 Date: June 23, 2023
 """
 class GF:
-    def __init__(self, mesh, n, selfEnergy=None):
+    def __init__(self, mesh: Mesh2D, n: float, selfEnergy=None):
         """
         Class to create an interacting Green function
         Inputs:

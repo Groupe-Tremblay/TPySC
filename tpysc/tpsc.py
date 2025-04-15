@@ -1,6 +1,6 @@
-from .GF import *
-from .Mesh import Mesh2D
-from .Dispersions import *
+from .gf import GF
+from .mesh import Mesh2D
+from .dispersions import calcDispersion2DSquare, calcDispersion2DTriangle
 import sparse_ir
 import matplotlib.pyplot as plt
 import json
@@ -9,7 +9,7 @@ class TPSC:
     """
     Class to set up a TPSC calculation.
     Calculation is carried using the ``run()`` method.
-    
+
     :param n: Density
     :type n: double
     :param U: Hubbard interaction
@@ -42,19 +42,19 @@ class TPSC:
             dispersion = calcDispersion2DSquare(k1, k2, self.nkx*self.nkx, t=self.t, tp=self.tp, tpp=self.tpp)
         elif dispersion_scheme.lower() == "triangle":
             dispersion = calcDispersion2DTriangle(k1, k2, self.nkx*self.nkx, t=self.t, tp=self.tp)
-            
-        # Compute the bandwidth and define the IR basis 
+
+        # Compute the bandwidth and define the IR basis
         self.T = T # Temperature
         wmax_mult = wmax_mult # for IR basis, multiple of bandwidth to use as wmax (must be greater than 1)
         IR_tol = IR_tol # for IR basis, tolerance of intermediate representation
-        wmax = dispersion.max() - dispersion.min() * wmax_mult      
+        wmax = dispersion.max() - dispersion.min() * wmax_mult
         IR_basis_set = sparse_ir.FiniteTempBasisSet(1./self.T, wmax, eps=IR_tol)
         self.mesh = Mesh2D(IR_basis_set, self.nkx, self.nkx, self.T, dispersion)
-        
+
         # TPSC parameters
         self.n = n # Density
         self.U = U # ?
-        
+
         # Member to hold the results
         self.selfEnergy = None
         self.main_results = None
@@ -63,12 +63,12 @@ class TPSC:
         self.docc = None
         return
 
-    
+
     def calcFirstLevelApprox(self):
         """
         Do the first level of approximation of TPSC.
         This calculates chi1, and then obtains chisp and chich from the sum rules and the TPSC ansatz.
-        
+
         :meta private:
         """
         # Calculate chi1
@@ -89,7 +89,7 @@ class TPSC:
         """
         Function to calculate chi1(q,iqn).
         This also calculates the trace of chi1(q,iqn) as a consistency check.
-        
+
         :meta private:
         """
         # Calculate the Green function G1 at the first level of approximation of TPSC
@@ -112,7 +112,7 @@ class TPSC:
     def calcUsp(self):
         """
         Function to compute Usp from chi1 and the sum rule.
-        
+
         :meta private:
         """
         # Bounds on the value of Usp
@@ -126,7 +126,7 @@ class TPSC:
         """
         Function to compute Uch from chi1 and the sum rule.
         Note: calcUsp has to be called before this function.
-        
+
         :meta private:
         """
         # Calculate Uch
@@ -136,7 +136,7 @@ class TPSC:
         """
         Function to compute the trace of chisp(q) = chi1(q)/(1-Usp/2*chi1(q)).
         Also sets chisp(q,iqn) and finds the maximal value.
-        
+
         :meta private:
         """
         self.chisp = self.chi1/(1-0.5*Usp*self.chi1)
@@ -151,7 +151,7 @@ class TPSC:
         """
         Function to compute the trace of chich(1) = chi1(q)/(1+Uch/2*chi1(q)).
         Also sets chich(q,iqn).
-        
+
         :meta private:
         """
         self.chich = self.chi1/(1+0.5*Uch*self.chi1)
@@ -167,7 +167,7 @@ class TPSC:
         The TPSC ansatz we use here satisfies the particle-hole symmetry with:
         n<1: Usp = U<n_up n_dn>/(<n_up><n_dn>)
         n>1: Usp = U<(1-n_up)(1-n_dn)>/(<(1-n_up)><(1-n_dn)>)
-        
+
         :meta private:
         """
         if (self.n<1):
@@ -181,7 +181,7 @@ class TPSC:
         The TPSC ansatz we use here satisfies the particle-hole symmetry with:
         n<1: Usp = U<n_up n_dn>/(<n_up><n_dn>)
         n>1: Usp = U<(1-n_up)(1-n_dn)>/(<(1-n_up)><(1-n_dn)>)
-        
+
         :meta private:
         """
         if self.n<1:
@@ -195,7 +195,7 @@ class TPSC:
         The TPSC ansatz we use here satisfies the particle-hole symmetry with:
         n<1: Usp = U<n_up n_dn>/(<n_up><n_dn>)
         n>1: Usp = U<(1-n_up)(1-n_dn)>/(<(1-n_up)><(1-n_dn)>)
-        
+
         :meta private:
         """
         if self.n<1:
@@ -208,7 +208,7 @@ class TPSC:
         Compute the spin correlation length from commensurate spin fluctuations at Q=(pi,pi).
         This calculates the width at half maximum of the spin susceptibility ONLY if its maximal value is at (pi,pi).
         If the spin susceptibility maximum is not at (pi,pi) (incommensurate spin fluctuations), this function returns -1.
-        
+
         :meta private:
         """
         # Set the default value
@@ -239,7 +239,7 @@ class TPSC:
         Note: The Hartree term (Un/2) is not included here.
         The TPSC self-energy is: U/8\sum_q(3chi_sp(q)U_sp + chi_ch(q)U_ch)G1(k+q).
         We define V(q) =  U/8(3chi_sp(q)U_sp + chi_ch(q)U_ch) and compute 1/2(V(r)*G(-r)+V(-r)G(r)).
-        
+
         :meta private:
         """
         # Get V(iqn,q)
@@ -273,7 +273,7 @@ class TPSC:
         In TPSC, the self-consistency check is exact when computed with the Green's function at the first level of approximation,
         but it is not with the Green's function G2. The discrepancy between the exact result and the trace with G2 is
         a check of the validity of the TPSC calculation.
-        
+
         :meta private:
         """
         # Calculate the traces
@@ -288,7 +288,7 @@ class TPSC:
         Calculate the trace of Self-Energy*G^(level)
         level: level of approximation for the Green's function used in the calculation, either 1 or 2
         Note: functions to calculate first and second levels of approximation must be called before this one
-        
+
         :meta private:
         """
         if level==1:
@@ -301,12 +301,12 @@ class TPSC:
             trace = np.sum(self.selfEnergy*self.g2.giwnk, axis=1)/self.mesh.nk
             trace_l  = self.mesh.IR_basis_set.smpl_wn_f.fit(trace)
             self.traceSG2 = self.mesh.IR_basis_set.basis_f.u(0)@trace_l
-    
-    
+
+
     def run(self):
         """
         Run the TPSC method
-        
+
         :return: A dictionary containing main TPSC output
         :rtype: dict
         """
@@ -314,7 +314,7 @@ class TPSC:
         self.calcFirstLevelApprox()
         self.calcSecondLevelApprox()
         self.checkSelfConsistency()
-        
+
         # Prepare output
         self.main_results = {
             "Usp" : self.Usp,
@@ -328,7 +328,7 @@ class TPSC:
             "mu2" : self.g2.mu,
         }
         return self.main_results
-    
+
     def printResults(self):
         """
         Print results to screen
@@ -339,11 +339,11 @@ class TPSC:
         for key,value in self.main_results.items():
             print(f"{key}: {value:5e}")
         return
-    
+
     def writeResultsJSON(self, filename):
         """
         Write the results in a JSON file
-        
+
         :param filename: The name of the output JSON file
         :type filename: str
         """
@@ -364,11 +364,11 @@ class TPSC:
         with open(filename, 'w') as outfile:
            outfile.write(json.dumps(out_results, indent=4))
         return
-    
+
     def plotSelfEnergyVsWn(self, coordinates, Wn_range, show=True, ax=None):
         """
         Evaluate and plot the self-energy as a function of Wn for a specific k-point.
-        
+
         :param coordinates: The k-point to evaluate the self-energy
         :type coordinates: list
         :param Wn_range: x-axis range
