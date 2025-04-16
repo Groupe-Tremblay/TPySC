@@ -1,4 +1,6 @@
 import numpy as np
+import sparse_ir
+
 """
 Date: June 22, 2023
 """
@@ -11,32 +13,38 @@ class Mesh2D:
     Credit for the basics: Niklas Witt
     https://spm-lab.github.io/sparse-ir-tutorial/src/TPSC_py.html
     """
-    def __init__(self,IR_basis_set, nk1, nk2, T, dispersion):
+    def __init__(self,
+                 nk1: int,
+                 T: float,
+                 wmax: float,
+                 IR_tol: float = 1e-12
+                 ):
+
+        # Compute the bandwidth and define the IR basis
+        self.T = T # Temperature
+        IR_basis_set = sparse_ir.FiniteTempBasisSet(1./self.T, wmax, eps=IR_tol)
+
         self.IR_basis_set = IR_basis_set
         self.T = T
 
         # Generate k-mesh and dispersion
-        self.nk1, self.nk2, self.nk = nk1, nk2, nk1*nk2
+        self.nk1, self.nk2, self.nk = nk1, nk1, nk1*nk1
         self.k1, self.k2 = np.meshgrid(np.arange(self.nk1)/self.nk1, np.arange(self.nk2)/self.nk2)
-        self.ek = dispersion
 
         # Lowest Matsubara frequency index
         self.iw0_f = np.where(self.IR_basis_set.wn_f == 1)[0][0]
         self.iw0_b = np.where(self.IR_basis_set.wn_b == 0)[0][0]
 
-        ### Generate a frequency-momentum grid for iw_n and ek (in preparation for calculating the Green function)
-        # frequency mesh (for Green function)
+        ### Generate a frequency-momentum grid for iw_n.
         self.iwn_f = 1j * self.IR_basis_set.wn_f * np.pi * self.T
-        self.iwn_f_ = np.tensordot(self.iwn_f, np.ones(self.nk), axes=0)
 
-        # ek mesh
-        self.ek_ = np.tensordot(np.ones(len(self.iwn_f)), self.ek, axes=0)
 
     def smpl_obj(self, statistics):
         """ Return sampling object for a given statistic """
         smpl_tau = {'F': self.IR_basis_set.smpl_tau_f, 'B': self.IR_basis_set.smpl_tau_b}[statistics]
         smpl_wn  = {'F': self.IR_basis_set.smpl_wn_f,  'B': self.IR_basis_set.smpl_wn_b }[statistics]
         return smpl_tau, smpl_wn
+
 
     def tau_to_wn(self, statistics, obj_tau):
         """ Fourier transform from tau to iw_n via IR basis """
@@ -46,6 +54,7 @@ class Mesh2D:
         obj_wn  = smpl_wn.evaluate(obj_l, axis=0)
         return obj_wn
 
+
     def wn_to_tau(self, statistics, obj_wn):
         """ Fourier transform from tau to iw_n via IR basis """
         smpl_tau, smpl_wn = self.smpl_obj(statistics)
@@ -54,12 +63,14 @@ class Mesh2D:
         obj_tau = smpl_tau.evaluate(obj_l, axis=0)
         return obj_tau
 
+
     def k_to_r(self,obj_k):
         """ Fourier transform from k-space to real space """
         obj_k = obj_k.reshape(-1, self.nk1, self.nk2)
         obj_r = np.fft.ifftn(obj_k,axes=(1,2))
         obj_r = obj_r.reshape(-1, self.nk)
         return obj_r
+
 
     def k_to_mr(self,obj_k):
         """ Fourier transform from k-space to real space (with a - sign) """
@@ -68,12 +79,14 @@ class Mesh2D:
         obj_r = obj_r.reshape(-1, self.nk)
         return obj_r
 
+
     def r_to_k(self,obj_r):
         """ Fourier transform from real space to k-space """
         obj_r = obj_r.reshape(-1, self.nk1, self.nk2)
         obj_k = np.fft.fftn(obj_r,axes=(1,2))
         obj_k = obj_k.reshape(-1, self.nk)
         return obj_k
+
 
     def get_specific_wn(self, statistics, obj_wn, n_array):
         """
@@ -115,6 +128,7 @@ class Mesh2D:
         # We remove any length-one axis from the resulting array:
         return np.squeeze(calculated_obj_wn)
 
+
     def _lagrange_extrapolation_zero_freq_nth_order(self, xs, ys):
         """
         Routine that evaluates the Lagrange polynomial passing through the points
@@ -132,6 +146,7 @@ class Mesh2D:
             val += prod_temp * ys[i,...]
         return val
 
+
     def extrapolate_zero_freq(self, obj_wn, n_freqs):
         """
         Routine that uses a Lagrange extrapolation of the n_freqs first
@@ -146,6 +161,20 @@ class Mesh2D:
 
         # We use our routine to evaluate the zero-frequency correlation function
         return self._lagrange_extrapolation_zero_freq_nth_order(frequencies_interpolation, evaluated_data)
+
+
+    def trace(self, obj, statistic: str, tau_value: float = 0):
+        """
+            TODO Documentation
+        """
+        trace = np.sum(obj, axis=1) / self.nk
+        if statistic.lower() == 'f':
+            trace_l = self.IR_basis_set.smpl_wn_f.fit(trace)
+            return self.IR_basis_set.basis_f.u(tau_value) @ trace_l
+        elif statistic.lower() == 'b':
+            trace_l = self.IR_basis_set.smpl_wn_b.fit(trace)
+            return self.IR_basis_set.basis_b.u(tau_value) @ trace_l
+
 
     def get_ind_kpt(self, kx, ky):
         """

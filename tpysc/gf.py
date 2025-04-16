@@ -1,12 +1,13 @@
 from scipy.optimize import brentq
 
 from tpysc.mesh import Mesh2D
+import numpy as np
 
 """
 Date: June 23, 2023
 """
 class GF:
-    def __init__(self, mesh: Mesh2D, n: float, selfEnergy=None):
+    def __init__(self, mesh: Mesh2D):
         """
         Class to create an interacting Green function
         Inputs:
@@ -17,13 +18,12 @@ class GF:
         """
         # Initialize the input quantities
         self.mesh = mesh
-        self.n = n
 
-        # Set the self-energy
-        self.selfEnergy = selfEnergy
+        # Initialize the various dependencies
+        self.gtaur = None
+        self.gtaumr = None
+        self.giwnk = None
 
-        # Calculate the chemical potential
-        self.calcMu()
 
     def calcGiwnkFromMu(self, mu):
         """
@@ -52,23 +52,22 @@ class GF:
         gtaumr = self.mesh.k_to_mr(self.giwnk)
         self.gtaumr = self.mesh.wn_to_tau('F', gtaumr)
 
-    def calcNfromG(self, mu):
-        """
-        Calculate the density from the Green's function and an input chemical potential
-        """
-        self.calcGiwnkFromMu(mu)
 
-        gio  = np.sum(self.giwnk,axis=1)/self.mesh.nk
-        g_l  = self.mesh.IR_basis_set.smpl_wn_f.fit(gio)
-        g_tau0 = -self.mesh.IR_basis_set.basis_f.u(1/self.mesh.T)@g_l
-
-        return 2*g_tau0.real
-
-    def calcMu(self):
+    def calcGiwnk(self, z):
         """
-        Calculate the chemical potential for the Green's function
+        Calculate a general Green's function in the form 1/(iwn - z).
         """
-        self.mu = brentq(lambda m: self.calcNfromG(m)-self.n, np.amin(self.mesh.ek), np.amax(self.mesh.ek), disp=True)
+        return 1 / (self.mesh.iwn_f[:, None] - z)
+
+
+    def calcNfromG(self, z):
+            """
+            Calculate the density from the Green's function and an input chemical potential
+            """
+
+            self.giwnk = self.calcGiwnk(z)
+            g_tau0 = -self.mesh.trace(self.giwnk, 'F', 1 / self.mesh.T)
+            return 2 * g_tau0.real
 
 
 

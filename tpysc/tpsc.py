@@ -1,9 +1,10 @@
 from .gf import GF
 from .mesh import Mesh2D
-from .dispersions import calcDispersion2DSquare, calcDispersion2DTriangle
-import sparse_ir
 import matplotlib.pyplot as plt
 import json
+import numpy as np
+
+from scipy.optimize import brentq
 
 class TPSC:
     """
@@ -31,37 +32,32 @@ class TPSC:
     :param IR_tol: For IR basis, tolerance of intermediate representation (default = 1e-12)
     :type IR_tol: double, optional
     """
-    def __init__(self, n, U, t, tp, tpp, nkx, dispersion_scheme, T, wmax_mult=10, IR_tol=1e-12):
-        # Generate the dispersion and the k-mesh
-        self.t = t # First neighbour hopping
-        self.tp = tp # Second neighbour hopping
-        self.tpp = tpp # Third neighbour hopping
-        self.nkx = nkx # Number of k-points in one space direction
-        k1, k2 = np.meshgrid(np.arange(self.nkx)/self.nkx, np.arange(self.nkx)/self.nkx)    # k-point grid
-        if dispersion_scheme.lower() == "square":
-            dispersion = calcDispersion2DSquare(k1, k2, self.nkx*self.nkx, t=self.t, tp=self.tp, tpp=self.tpp)
-        elif dispersion_scheme.lower() == "triangle":
-            dispersion = calcDispersion2DTriangle(k1, k2, self.nkx*self.nkx, t=self.t, tp=self.tp)
+    def __init__(self,
+                 mesh: Mesh2D,
+                 dispersion: np.ndarray,
+                 U: float,
+                 n: float,
+                 ):
 
-        # Compute the bandwidth and define the IR basis
-        self.T = T # Temperature
-        wmax_mult = wmax_mult # for IR basis, multiple of bandwidth to use as wmax (must be greater than 1)
-        IR_tol = IR_tol # for IR basis, tolerance of intermediate representation
-        wmax = dispersion.max() - dispersion.min() * wmax_mult
-        IR_basis_set = sparse_ir.FiniteTempBasisSet(1./self.T, wmax, eps=IR_tol)
-        self.mesh = Mesh2D(IR_basis_set, self.nkx, self.nkx, self.T, dispersion)
+        self.mesh = mesh
+        self.dispersion = dispersion
 
-        # TPSC parameters
-        self.n = n # Density
-        self.U = U # ?
+        self.n = n
+        self.U = U
 
         # Member to hold the results
+        self.g1 = None
+        self.g2 = None
+        self.mu1 = None
+        self.mu2 = None
         self.selfEnergy = None
-        self.main_results = None
-        self.Uch = None
-        self.Usp = None
-        self.docc = None
-        return
+        self.main_results = {}
+        self.Uch = -1.0
+        self.Usp = -1.0
+        self.docc = -1.0
+
+        self.traceSG1 = None
+        self.traceSG2 = None
 
 
     def calcFirstLevelApprox(self):
@@ -93,7 +89,12 @@ class TPSC:
         :meta private:
         """
         # Calculate the Green function G1 at the first level of approximation of TPSC
-        self.g1 = GF(self.mesh, self.n)
+        self.g1 = GF(self.mesh)
+        # Compute mu^(1)
+        dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
+        self.mu1 = brentq(lambda m: self.g1.calcNfromG(self.dispersion - m)-self.n, dispersion_min, dispersion_max, disp=True)
+        self.g1.giwnk = self.g1.calcGiwnk(self.dispersion - self.mu1)
+
         self.g1.calcGtaur()
         self.g1.calcGtaumr()
 
@@ -259,7 +260,10 @@ class TPSC:
         self.selfEnergy = self.mesh.tau_to_wn('F', self.selfEnergy)
 
         # Calculate G2
-        self.g2 = GF(self.mesh, self.n, self.selfEnergy)
+        self.g2 = GF(self.mesh)
+        dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
+        self.mu2 = brentq(lambda m: self.g2.calcNfromG(self.dispersion - m + self.selfEnergy)-self.n, dispersion_min, dispersion_max, disp=True)
+        self.g2.giwnk = self.g2.calcGiwnk(self.dispersion - self.mu2 + self.selfEnergy)
         self.g2.calcGtaur()
         self.g2.calcGtaumr()
         return
@@ -324,8 +328,8 @@ class TPSC:
             "Trace_Self2_G1" : self.traceSG1,
             "Trace_Self2_G2" : self.traceSG2,
             "U*doubleocc-U*n^2/4" : self.exactTraceSelfG,
-            "mu1" : self.g1.mu,
-            "mu2" : self.g2.mu,
+            "mu1" : self.mu1,
+            "mu2" : self.mu2,
         }
         return self.main_results
 
@@ -358,8 +362,8 @@ class TPSC:
             "Trace_Self2_G1" : [self.traceSG1.real, self.traceSG1.imag],
             "Trace_Self2_G2" : [self.traceSG2.real, self.traceSG2.imag],
             "U*doubleocc-U*n/4" : self.exactTraceSelfG,
-            "mu1" : self.g1.mu,
-            "mu2" : self.g2.mu,
+            "mu1" : self.mu1,
+            "mu2" : self.mu2,
         }
         with open(filename, 'w') as outfile:
            outfile.write(json.dumps(out_results, indent=4))

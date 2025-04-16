@@ -1,4 +1,5 @@
 import tpysc
+import tpysc.dispersions # TODO Fix this import
 import json
 import numpy as np
 
@@ -10,20 +11,29 @@ def test_compare():
 
     # Run the reference TPSC calculation
     parameters = {
-        "dispersion_scheme" : "square",  # Dispersion model
-        "t" : 1,                  # First neighbour hopping
-        "tp" : 1,                 # Second neighbour hopping
-        "tpp" : 0,                # Third neighbour hopping
-        "T" : 0.1,                # Temperature
-        "U" : 2.0,                # ?
-        "n" : 1,                  # Density
-        "nkx" : 64,               # Number of k-points in one space direction
-        "wmax_mult" : 1.25,       # for IR basis, multiple of bandwidth to use as wmax (must be greater than 1)
-        "IR_tol" : 1e-12          # # for IR basis, tolerance of intermediate representation
+        "mesh": {
+            "T" : 0.1,                # Temperature
+            "nk1" : 64,               # Number of k-points in one space direction
+            "wmax" : 8,               # for IR basis
+            "IR_tol" : 1e-12
+        },
+        "dispersion": {
+            "t" : 1,                  # First neighbour hopping
+            "tp" : 1,                 # Second neighbour hopping
+            "tpp" : 0,                # Third neighbour hopping
+        },
+        "tpsc": {
+            "U" : 2.0,                # Hubbard Interaction
+            "n" : 1,                  # Electronic density per unit cell
+            },
     }
 
-    obj = tpysc.TPSC(**parameters)
+    mesh = tpysc.mesh.Mesh2D(**parameters["mesh"])
+    dispersion = tpysc.dispersions.calcDispersion2DSquare(mesh, **parameters["dispersion"])
+    obj = tpysc.TPSC(mesh, dispersion, **parameters["tpsc"])
+
     results = obj.run()
+
     print("this version:", results)
 
     # Load the reference results
