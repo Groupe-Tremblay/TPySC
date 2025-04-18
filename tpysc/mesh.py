@@ -66,25 +66,19 @@ class Mesh2D:
 
     def k_to_r(self,obj_k):
         """ Fourier transform from k-space to real space """
-        obj_k = obj_k.reshape(-1, self.nk1, self.nk2)
         obj_r = np.fft.ifftn(obj_k,axes=(1,2))
-        obj_r = obj_r.reshape(-1, self.nk)
         return obj_r
 
 
     def k_to_mr(self,obj_k):
         """ Fourier transform from k-space to real space (with a - sign) """
-        obj_k = obj_k.reshape(-1, self.nk1, self.nk2)
         obj_r = np.fft.fftn(obj_k, axes=(1,2), norm="forward")
-        obj_r = obj_r.reshape(-1, self.nk)
         return obj_r
 
 
     def r_to_k(self,obj_r):
         """ Fourier transform from real space to k-space """
-        obj_r = obj_r.reshape(-1, self.nk1, self.nk2)
         obj_k = np.fft.fftn(obj_r,axes=(1,2))
-        obj_k = obj_k.reshape(-1, self.nk)
         return obj_k
 
 
@@ -167,7 +161,7 @@ class Mesh2D:
         """
             TODO Documentation
         """
-        trace = np.sum(obj, axis=1) / self.nk
+        trace = np.sum(obj, axis=(1,2)) / self.nk
         if statistic.lower() == 'f':
             trace_l = self.IR_basis_set.smpl_wn_f.fit(trace)
             return self.IR_basis_set.basis_f.u(tau_value) @ trace_l

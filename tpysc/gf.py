@@ -57,7 +57,8 @@ class GF:
         """
         Calculate a general Green's function in the form 1/(iwn - z).
         """
-        return 1 / (self.mesh.iwn_f[:, None] - z)
+        # return 1 / (self.mesh.iwn_f[:, None, None] - z[None, :, :])
+        return 1 / (self.mesh.iwn_f[:, None, None] - z)
 
 
     def calcNfromG(self, z):
@@ -66,7 +67,9 @@ class GF:
             """
 
             self.giwnk = self.calcGiwnk(z)
+            print(self.giwnk.shape)
             g_tau0 = -self.mesh.trace(self.giwnk, 'F', 1 / self.mesh.T)
+            print(g_tau0.shape)
             return 2 * g_tau0.real
 
 

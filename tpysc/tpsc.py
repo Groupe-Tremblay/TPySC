@@ -92,7 +92,7 @@ class TPSC:
         self.g1 = GF(self.mesh)
         # Compute mu^(1)
         dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
-        self.mu1 = brentq(lambda m: self.g1.calcNfromG(self.dispersion - m)-self.n, dispersion_min, dispersion_max, disp=True)
+        self.mu1 = brentq(lambda m: self.g1.calcNfromG(self.dispersion[None, :, :] - m) - self.n, dispersion_min, dispersion_max, disp=True)
         self.g1.giwnk = self.g1.calcGiwnk(self.dispersion - self.mu1)
 
         self.g1.calcGtaur()
@@ -105,10 +105,8 @@ class TPSC:
         self.chi1 = self.mesh.r_to_k(self.chi1)
         self.chi1 = self.mesh.tau_to_wn('B', self.chi1)
 
-        # Calculate the trace of chi1
-        chi1_trace = np.sum(self.chi1, axis=1)/self.mesh.nk
-        chi1_trace_l  = self.mesh.IR_basis_set.smpl_wn_b.fit(chi1_trace)
-        self.traceChi1 = self.mesh.IR_basis_set.basis_b.u(0)@chi1_trace_l
+        self.traceChi1 = self.mesh.trace(self.chi1, 'B')
+
 
     def calcUsp(self):
         """
@@ -263,7 +261,7 @@ class TPSC:
         # Calculate G2
         self.g2 = GF(self.mesh)
         dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
-        self.mu2 = brentq(lambda m: self.g2.calcNfromG(self.dispersion - m + self.selfEnergy)-self.n, dispersion_min, dispersion_max, disp=True)
+        self.mu2 = brentq(lambda m: self.g2.calcNfromG(self.dispersion[None, :, :] - m + self.selfEnergy) - self.n, dispersion_min, dispersion_max, disp=True)
         self.g2.giwnk = self.g2.calcGiwnk(self.dispersion - self.mu2 + self.selfEnergy)
         self.g2.calcGtaur()
         self.g2.calcGtaumr()
