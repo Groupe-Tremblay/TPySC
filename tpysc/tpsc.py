@@ -79,7 +79,7 @@ class TPSC:
 
         # Calculate the spin correlation length
         self.calc_xisp_commensurate()
-        return
+
 
     def calc_chi1(self):
         """
@@ -199,7 +199,7 @@ class TPSC:
             return self.n + Usp/(2*self.U)*(2-self.n)*(2-self.n)-2+2*self.n - self.n*self.n
 
 
-    def calc_xisp_commensurate(self):
+    def calc_xisp_commensurate(self) -> float:
         """
         Compute the spin correlation length from commensurate spin fluctuations at Q=(pi,pi).
         This calculates the width at half maximum of the spin susceptibility ONLY if its maximal value is at (pi,pi).
@@ -208,25 +208,43 @@ class TPSC:
         :meta private:
         """
         # Set the default value
-        self.xisp = -1
         qy = 0
-        qx = int(self.mesh.nk1/2)
         qHM = 0
         q0 = 0
-        index_peak = np.argmax(self.chisp[self.mesh.iw0_b])
+        index_peak = np.unravel_index(self.chisp[self.mesh.iw0_b].argmax(), self.chisp[self.mesh.iw0_b].shape)
+
+        qx = int(self.mesh.nk1/2)
+
+        if (index_peak != (qx, qx)): # Abort if peak is not at Q=(pi, pi)
+            self.xisp = -1
+            return self.xisp
+
         # Calculate the spin susceptibility from commensurate fluctuations
-        if (index_peak == int(self.mesh.nk1*qx+qx)):
-            chispmax = self.chisp[self.mesh.iw0_b, index_peak].real
-            chisphalf = self.chisp[self.mesh.iw0_b,int(self.mesh.nk1*qx)+qy].real
+        chispmax = self.chisp[self.mesh.iw0_b, qx, qx].real
+        # chisphalf = self.chisp[self.mesh.iw0_b,int(self.mesh.nk1*qx)+qy].real
+        chisphalf = self.chisp[self.mesh.iw0_b, qx, qy].real
+
+        # Calculate the spin susceptibility from commensurate fluctuations
+        while (chisphalf < chispmax/2 and qy < self.mesh.nk1/2):
             chisptemp = chisphalf
-            while (chisphalf < chispmax/2 and qy < self.mesh.nk1/2):
-                chisptemp = chisphalf
-                qy = qy+1
-                chisphalf = self.chisp[self.mesh.iw0_b, int(self.mesh.nk1*qx)+qy].real
-            if qy>0:
-                q0 = 2*np.pi*(qy-1)/self.mesh.nk1
-                qHM = 2*np.pi/self.mesh.nk1*(chispmax/2 - chisptemp)/(chisphalf - chisptemp)
-            self.xisp = 1/(np.pi - qHM - q0)
+            qy += 1
+            chisphalf = self.chisp[self.mesh.iw0_b, qx, qy].real
+        if qy>0:
+            q0 = 2*np.pi*(qy-1)/self.mesh.nk1
+            qHM = 2*np.pi/self.mesh.nk1*(chispmax/2 - chisptemp)/(chisphalf - chisptemp)
+        self.xisp = 1/(np.pi - qHM - q0)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     def calc_second_level_approx(self):
