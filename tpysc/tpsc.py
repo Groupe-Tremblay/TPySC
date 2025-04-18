@@ -123,6 +123,7 @@ class TPSC:
         # Calculate Usp
         self.Usp = brentq(lambda m: self.calcSumChisp(m)-self.calcSumRuleChisp(m), Uspmin, Uspmax, disp=True)
 
+
     def calcUch(self, Uchmin=0., Uchmax=100.):
         """
         Function to compute Uch from chi1 and the sum rule.
@@ -133,6 +134,7 @@ class TPSC:
         # Calculate Uch
         self.Uch = brentq(lambda m: self.calcSumChich(m)-self.calcSumRuleChich(self.Usp), Uchmin, Uchmax, disp=True)
 
+
     def calcSumChisp(self, Usp):
         """
         Function to compute the trace of chisp(q) = chi1(q)/(1-Usp/2*chi1(q)).
@@ -140,13 +142,10 @@ class TPSC:
 
         :meta private:
         """
-        self.chisp = self.chi1/(1-0.5*Usp*self.chi1)
+        self.chisp = self.chi1 / (1 - 0.5 * Usp * self.chi1)
         self.chispmax = np.amax(self.chisp)
-        chisp_trace = np.sum(self.chisp, axis=1)/self.mesh.nk
-        chisp_trace_l  = self.mesh.IR_basis_set.smpl_wn_b.fit(chisp_trace)
-        chisp_trace = self.mesh.IR_basis_set.basis_b.u(0)@chisp_trace_l
+        return self.mesh.trace(self.chisp, 'B').real
 
-        return chisp_trace.real
 
     def calcSumChich(self, Uch):
         """
@@ -156,10 +155,8 @@ class TPSC:
         :meta private:
         """
         self.chich = self.chi1/(1+0.5*Uch*self.chi1)
-        chich_trace = np.sum(self.chich, axis=1)/self.mesh.nk
-        chich_trace_l  = self.mesh.IR_basis_set.smpl_wn_b.fit(chich_trace)
-        chich_trace = self.mesh.IR_basis_set.basis_b.u(0)@chich_trace_l
-        return chich_trace.real
+        return self.mesh.trace(self.chich, 'B').real
+
 
     def calcDoubleOccupancy(self):
         """
@@ -176,6 +173,7 @@ class TPSC:
         else:
             return self.Usp/(4*self.U)*(2-self.n)*(2-self.n)-1+self.n
 
+
     def calcSumRuleChisp(self, Usp):
         """
         Calculate the spin susceptibility sum rule for a specific Usp and U.
@@ -190,6 +188,7 @@ class TPSC:
         else:
             return self.n - Usp/(2*self.U)*(2-self.n)*(2-self.n)+2-2*self.n
 
+
     def calcSumRuleChich(self, Usp):
         """
         Calculate the charge susceptibility sum rule for a specific Usp and U.
@@ -203,6 +202,7 @@ class TPSC:
             return self.n + Usp/self.U*self.n*self.n/2 - self.n*self.n
         else:
             return self.n + Usp/(2*self.U)*(2-self.n)*(2-self.n)-2+2*self.n - self.n*self.n
+
 
     def calcXispCommensurate(self):
         """
@@ -233,12 +233,13 @@ class TPSC:
                 qHM = 2*np.pi/self.mesh.nk1*(chispmax/2 - chisptemp)/(chisphalf - chisptemp)
             self.xisp = 1/(np.pi - qHM - q0)
 
+
     def calcSecondLevelApprox(self):
         """
         Function to calculate the self-energy in the second level of approximation of TPSC.
         Important: The function calcFirstLevelApprox must be called before this one.
         Note: The Hartree term (Un/2) is not included here.
-        The TPSC self-energy is: U/8\sum_q(3chi_sp(q)U_sp + chi_ch(q)U_ch)G1(k+q).
+        The TPSC self-energy is: U/8 sum_q(3chi_sp(q)U_sp + chi_ch(q)U_ch)G1(k+q).
         We define V(q) =  U/8(3chi_sp(q)U_sp + chi_ch(q)U_ch) and compute 1/2(V(r)*G(-r)+V(-r)G(r)).
 
         :meta private:
@@ -281,30 +282,11 @@ class TPSC:
         :meta private:
         """
         # Calculate the traces
-        self.calcTraceSelfG(level=1)
-        self.calcTraceSelfG(level=2)
+        self.traceSG1 = self.mesh.trace(self.selfEnergy * self.g1.giwnk, 'F')
+        self.traceSG2 = self.mesh.trace(self.selfEnergy * self.g2.giwnk, 'F')
 
         # Calculate the expected result
         self.exactTraceSelfG = self.U*self.docc-self.U*self.n*self.n/4
-
-    def calcTraceSelfG(self,level):
-        """
-        Calculate the trace of Self-Energy*G^(level)
-        level: level of approximation for the Green's function used in the calculation, either 1 or 2
-        Note: functions to calculate first and second levels of approximation must be called before this one
-
-        :meta private:
-        """
-        if level==1:
-            # Calculate the trace of Self-Energy*G1
-            trace = np.sum(self.selfEnergy*self.g1.giwnk, axis=1)/self.mesh.nk
-            trace_l  = self.mesh.IR_basis_set.smpl_wn_f.fit(trace)
-            self.traceSG1 = self.mesh.IR_basis_set.basis_f.u(0)@trace_l
-        elif level==2:
-            # Calculate the trace of Self-Energy*G2
-            trace = np.sum(self.selfEnergy*self.g2.giwnk, axis=1)/self.mesh.nk
-            trace_l  = self.mesh.IR_basis_set.smpl_wn_f.fit(trace)
-            self.traceSG2 = self.mesh.IR_basis_set.basis_f.u(0)@trace_l
 
 
     def run(self):
