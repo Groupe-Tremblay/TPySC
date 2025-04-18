@@ -16,5 +16,5 @@ parameters = {
 
 tpsc = tpysc.TPSC(**parameters) #Note: the "**" expands the dictionary
 out = tpsc.run()
-tpsc.printResults()
+print(tpsc)
 tpsc.writeResultsJSON("main_results.json")

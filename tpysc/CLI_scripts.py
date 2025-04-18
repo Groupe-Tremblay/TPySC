@@ -32,6 +32,6 @@ def TPSC_cli():
     if len(sys.argv) == 3:
         tpsc.writeResultsJSON(sys.argv[2])
     else:
-        tpsc.printResults()
+        print(tpsc)
 
     exit(0)

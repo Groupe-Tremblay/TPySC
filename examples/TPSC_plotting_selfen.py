@@ -18,7 +18,7 @@ parameters = {
 # Do the TPSC calculation
 tpsc = tpysc.TPSC(**parameters)
 tpsc.run()
-tpsc.printResults()
+print(tpsc)
 mesh = tpsc.mesh
 
 # EXAMPLE 1 - EVALUATING THE SELF-ENERGY AS A FUNCTION OF WN AT A SPECIFIC K-POINT (pi/2, pi/2)

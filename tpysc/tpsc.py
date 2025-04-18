@@ -309,16 +309,15 @@ class TPSC:
         return self.main_results
 
 
-    def printResults(self):
-        """
-        Print results to screen
-        """
-        if self.main_results is None:
-            print("TPSC was not run, please run the TPSC before printing the results.")
-            return
+    def __str__(self) -> str:
+        if self.main_results is {}:
+            return "TPSC was not run, please run the TPSC before printing the results."
+
+        string = ""
         for key,value in self.main_results.items():
-            print(f"{key}: {value:5e}")
-        return
+            string += f"{key:<20}: {value:5e}\n"
+
+        return string
 
 
     def writeResultsJSON(self, filename):
@@ -328,7 +327,7 @@ class TPSC:
         :param filename: The name of the output JSON file
         :type filename: str
         """
-        if self.main_results is None:
+        if self.main_results is {}:
             print("TPSC was not run, please run the TPSC before printing the results.")
             return
         out_results = {
@@ -344,7 +343,6 @@ class TPSC:
         }
         with open(filename, 'w') as outfile:
            outfile.write(json.dumps(out_results, indent=4))
-        return
 
 
     def plotSelfEnergyVsWn(self, coordinates, Wn_range, show=True, ax=None):
