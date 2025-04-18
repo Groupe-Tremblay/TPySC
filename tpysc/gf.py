@@ -20,57 +20,47 @@ class GF:
         self.mesh = mesh
 
         # Initialize the various dependencies
-        self.gtaur = None
-        self.gtaumr = None
+        self._gtaur = None
+        self._gtaumr = None
         self.giwnk = None
 
 
-    def calcGiwnkFromMu(self, mu):
-        """
-        Calculate Green function G(iwn,k) from an input chemical potential
-        """
-        if self.selfEnergy is not None:
-            self.giwnk = 1./(self.mesh.iwn_f_ - (self.mesh.ek_ - mu) - self.selfEnergy)
-        else:
-            self.giwnk = 1./(self.mesh.iwn_f_ - (self.mesh.ek_ - mu))
+    @property
+    def gtaur(self) -> np.ndarray:
+        # TODO Doc
+        if self._gtaur is None:
+            g = self.mesh.k_to_r(self.giwnk)
+            self._gtaur = self.mesh.wn_to_tau('F', g)
 
-    def calcGtaur(self):
-        """
-        Calculate real space Green function G(tau,r) [for calculating chi0 and sigma]
-        """
-        # Fourier transform
-        # Calculation of G
-        gtaur = self.mesh.k_to_r(self.giwnk)
-        self.gtaur = self.mesh.wn_to_tau('F', gtaur)
+        return self._gtaur
 
-    def calcGtaumr(self):
-        """
-        Calculate real space Green function G(tau,-r) [for calculating chi0 and sigma]
-        """
-        # Fourier transform
-        # Calculation of G
-        gtaumr = self.mesh.k_to_mr(self.giwnk)
-        self.gtaumr = self.mesh.wn_to_tau('F', gtaumr)
+
+    @property
+    def gtaumr(self) -> np.ndarray:
+        # TODO Doc
+        if self._gtaumr is None:
+            g  = self.mesh.k_to_mr(self.giwnk)
+            self._gtaumr = self.mesh.wn_to_tau('F', g)
+
+        return self._gtaumr
 
 
     def calcGiwnk(self, z):
         """
         Calculate a general Green's function in the form 1/(iwn - z).
         """
-        # return 1 / (self.mesh.iwn_f[:, None, None] - z[None, :, :])
         return 1 / (self.mesh.iwn_f[:, None, None] - z)
 
 
     def calcNfromG(self, z):
-            """
-            Calculate the density from the Green's function and an input chemical potential
-            """
-
-            self.giwnk = self.calcGiwnk(z)
-            print(self.giwnk.shape)
-            g_tau0 = -self.mesh.trace(self.giwnk, 'F', 1 / self.mesh.T)
-            print(g_tau0.shape)
-            return 2 * g_tau0.real
+        """
+        Calculate the density from the Green's function and an input chemical potential
+        """
+        self.giwnk = self.calcGiwnk(z)
+        print(self.giwnk.shape)
+        g_tau0 = -self.mesh.trace(self.giwnk, 'F', 1 / self.mesh.T)
+        print(g_tau0.shape)
+        return 2 * g_tau0.real
 
 
 

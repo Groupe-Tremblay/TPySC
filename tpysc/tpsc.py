@@ -95,9 +95,6 @@ class TPSC:
         self.mu1 = brentq(lambda m: self.g1.calcNfromG(self.dispersion[None, :, :] - m) - self.n, dispersion_min, dispersion_max, disp=True)
         self.g1.giwnk = self.g1.calcGiwnk(self.dispersion - self.mu1)
 
-        self.g1.calcGtaur()
-        self.g1.calcGtaumr()
-
         # Calculate chi1(tau,r)
         self.chi1 = 2.*self.g1.gtaur * self.g1.gtaumr[::-1, :]
 
@@ -263,8 +260,6 @@ class TPSC:
         dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
         self.mu2 = brentq(lambda m: self.g2.calcNfromG(self.dispersion[None, :, :] - m + self.selfEnergy) - self.n, dispersion_min, dispersion_max, disp=True)
         self.g2.giwnk = self.g2.calcGiwnk(self.dispersion[None, :, :] - self.mu2 + self.selfEnergy)
-        self.g2.calcGtaur()
-        self.g2.calcGtaumr()
         return
 
 
