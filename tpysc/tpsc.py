@@ -262,7 +262,7 @@ class TPSC:
         self.g2 = GF(self.mesh)
         dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
         self.mu2 = brentq(lambda m: self.g2.calcNfromG(self.dispersion[None, :, :] - m + self.selfEnergy) - self.n, dispersion_min, dispersion_max, disp=True)
-        self.g2.giwnk = self.g2.calcGiwnk(self.dispersion - self.mu2 + self.selfEnergy)
+        self.g2.giwnk = self.g2.calcGiwnk(self.dispersion[None, :, :] - self.mu2 + self.selfEnergy)
         self.g2.calcGtaur()
         self.g2.calcGtaumr()
         return
@@ -307,7 +307,7 @@ class TPSC:
             "Trace_chi1" : self.traceChi1,
             "Trace_Self2_G1" : self.traceSG1,
             "Trace_Self2_G2" : self.traceSG2,
-            "U*doubleocc-U*n^2/4" : self.exactTraceSelfG,
+            "Exact_Trace_Self2_G" : self.exactTraceSelfG,
             "mu1" : self.mu1,
             "mu2" : self.mu2,
         }
@@ -341,7 +341,7 @@ class TPSC:
             "Trace_chi1" : [self.traceChi1.real, self.traceChi1.imag],
             "Trace_Self2_G1" : [self.traceSG1.real, self.traceSG1.imag],
             "Trace_Self2_G2" : [self.traceSG2.real, self.traceSG2.imag],
-            "U*doubleocc-U*n/4" : self.exactTraceSelfG,
+            "Exact_Trace_Self2_G" : self.exactTraceSelfG,
             "mu1" : self.mu1,
             "mu2" : self.mu2,
         }
