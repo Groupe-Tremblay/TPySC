@@ -57,9 +57,7 @@ class GF:
         Calculate the density from the Green's function and an input chemical potential
         """
         self.giwnk = self.calcGiwnk(z)
-        print(self.giwnk.shape)
         g_tau0 = -self.mesh.trace(self.giwnk, 'F', 1 / self.mesh.T)
-        print(g_tau0.shape)
         return 2 * g_tau0.real
 
 
