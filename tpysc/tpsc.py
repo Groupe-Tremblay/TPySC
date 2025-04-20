@@ -208,12 +208,12 @@ class TPSC:
         :meta private:
         """
         # Set the default value
+        qx = int(self.mesh.nk1/2)
         qy = 0
         qHM = 0
         q0 = 0
         index_peak = np.unravel_index(self.chisp[self.mesh.iw0_b].argmax(), self.chisp[self.mesh.iw0_b].shape)
 
-        qx = int(self.mesh.nk1/2)
 
         if (index_peak != (qx, qx)): # Abort if peak is not at Q=(pi, pi)
             self.xisp = -1
@@ -221,7 +221,6 @@ class TPSC:
 
         # Calculate the spin susceptibility from commensurate fluctuations
         chispmax = self.chisp[self.mesh.iw0_b, qx, qx].real
-        # chisphalf = self.chisp[self.mesh.iw0_b,int(self.mesh.nk1*qx)+qy].real
         chisphalf = self.chisp[self.mesh.iw0_b, qx, qy].real
 
         # Calculate the spin susceptibility from commensurate fluctuations
@@ -229,6 +228,7 @@ class TPSC:
             chisptemp = chisphalf
             qy += 1
             chisphalf = self.chisp[self.mesh.iw0_b, qx, qy].real
+
         if qy>0:
             q0 = 2*np.pi*(qy-1)/self.mesh.nk1
             qHM = 2*np.pi/self.mesh.nk1*(chispmax/2 - chisptemp)/(chisphalf - chisptemp)
