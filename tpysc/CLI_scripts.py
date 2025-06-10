@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from .tpsc import TPSC
+from .tpsc import Tpsc
 import sys
 import json
 
@@ -26,7 +26,7 @@ def TPSC_cli():
     with open(para_filename, 'r') as infile:
         params = json.load(infile)
 
-    tpsc = TPSC(**params)
+    tpsc = Tpsc(**params)
     tpsc.run()
 
     if len(sys.argv) == 3:

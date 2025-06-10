@@ -6,7 +6,7 @@ import numpy as np
 
 from scipy.optimize import brentq
 
-class TPSC:
+class Tpsc:
     """
     Class to set up a TPSC calculation.
     Calculation is carried using the ``run()`` method.
