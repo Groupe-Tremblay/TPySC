@@ -1,4 +1,4 @@
-from .gf import calcGiwnk, calcNfromG
+from .gf import calcGiwnk, calcNfromG, transform_g_to_direct_space
 from .mesh import Mesh2D
 import matplotlib.pyplot as plt
 import json
@@ -69,22 +69,6 @@ class Tpsc:
         self.traceSG2 = None
 
 
-    def calc_g1(self) -> None:
-        """
-        TODO DOCUMENTATION
-        """
-
-        # Compute mu^(1)
-        dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
-        self.mu1 = brentq(lambda m: calcNfromG(self.mesh, self.dispersion[None, :, :] - m) - self.n, dispersion_min, dispersion_max, disp=True)
-        self.g1 = calcGiwnk(self.mesh, self.dispersion - self.mu1)
-
-        # Compute Fourier transforms
-        g = self.mesh.wn_to_tau('F', self.g1)
-        self.g1_tau_r = self.mesh.k_to_r(g)
-        self.g1_tau_mr = self.mesh.k_to_mr(g)
-
-
     def calc_first_level_approx(self):
         """
         Do the first level of approximation of TPSC.
@@ -104,6 +88,20 @@ class Tpsc:
 
         # Calculate the double occupancy
         self.docc = self.calc_double_occupancy()
+
+
+    def calc_g1(self) -> None:
+        """
+        TODO DOCUMENTATION
+        """
+
+        # Compute mu^(1)
+        dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
+        self.mu1 = brentq(lambda m: calcNfromG(self.mesh, self.dispersion[None, :, :] - m) - self.n, dispersion_min, dispersion_max, disp=True)
+        self.g1 = calcGiwnk(self.mesh, self.dispersion - self.mu1)
+
+        # Compute Fourier transforms
+        self.g1_tau_r, self.g1_tau_mr = transform_g_to_direct_space(self.mesh, self.g1)
 
 
     def calc_chi1(self):
