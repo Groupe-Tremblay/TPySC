@@ -1,4 +1,4 @@
-from .gf import GF
+from .gf import calcGiwnk, calcNfromG
 from .mesh import Mesh2D
 import matplotlib.pyplot as plt
 import json
@@ -47,17 +47,42 @@ class TPSC:
 
         # Member to hold the results
         self.g1 = None
+        self.g1_tau_r = None
+        self.g1_tau_mr = None
+
         self.g2 = None
+
+        self.chi1 = None
+
         self.mu1 = None
         self.mu2 = None
-        self.selfEnergy = None
+
+        self.self_energy = None
+
         self.main_results = {}
+
         self.Uch = -1.0
         self.Usp = -1.0
         self.docc = -1.0
 
         self.traceSG1 = None
         self.traceSG2 = None
+
+
+    def calc_g1(self) -> None:
+        """
+        TODO DOCUMENTATION
+        """
+
+        # Compute mu^(1)
+        dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
+        self.mu1 = brentq(lambda m: calcNfromG(self.mesh, self.dispersion[None, :, :] - m) - self.n, dispersion_min, dispersion_max, disp=True)
+        self.g1 = calcGiwnk(self.mesh, self.dispersion - self.mu1)
+
+        # Compute Fourier transforms
+        g = self.mesh.wn_to_tau('F', self.g1)
+        self.g1_tau_r = self.mesh.k_to_r(g)
+        self.g1_tau_mr = self.mesh.k_to_mr(g)
 
 
     def calc_first_level_approx(self):
@@ -67,6 +92,9 @@ class TPSC:
 
         :meta private:
         """
+        # Calculate the Green function G1 at the first level of approximation of TPSC.
+        self.calc_g1()
+
         # Calculate chi1
         self.calc_chi1()
 
@@ -77,9 +105,6 @@ class TPSC:
         # Calculate the double occupancy
         self.docc = self.calc_double_occupancy()
 
-        # Calculate the spin correlation length
-        self.calc_xisp_commensurate()
-
 
     def calc_chi1(self):
         """
@@ -88,21 +113,14 @@ class TPSC:
 
         :meta private:
         """
-        # Calculate the Green function G1 at the first level of approximation of TPSC
-        self.g1 = GF(self.mesh)
-        # Compute mu^(1)
-        dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
-        self.mu1 = brentq(lambda m: self.g1.calcNfromG(self.dispersion[None, :, :] - m) - self.n, dispersion_min, dispersion_max, disp=True)
-        self.g1.giwnk = self.g1.calcGiwnk(self.dispersion - self.mu1)
-
         # Calculate chi1(tau,r)
-        self.chi1 = 2.*self.g1.gtaur * self.g1.gtaumr[::-1, :]
+        self.chi1 = 2. * self.g1_tau_r * self.g1_tau_mr[::-1, :]
 
         # Fourier transform to (q,iqn)
         self.chi1 = self.mesh.r_to_k(self.chi1)
         self.chi1 = self.mesh.tau_to_wn('B', self.chi1)
 
-        self.traceChi1 = self.mesh.trace(self.chi1, 'B')
+        self.traceChi = self.mesh.trace('B', self.chi1)
 
 
     def calc_usp(self):
@@ -137,9 +155,9 @@ class TPSC:
 
         :meta private:
         """
-        self.chisp = self.chi1 / (1 - 0.5 * Usp * self.chi1)
+        self.chisp = self.chi1/ (1 - 0.5 * Usp * self.chi1)
         self.chispmax = np.amax(self.chisp)
-        return self.mesh.trace(self.chisp, 'B').real
+        return self.mesh.trace('B', self.chisp).real
 
 
     def calc_sum_chich(self, Uch):
@@ -150,7 +168,7 @@ class TPSC:
         :meta private:
         """
         self.chich = self.chi1/(1+0.5*Uch*self.chi1)
-        return self.mesh.trace(self.chich, 'B').real
+        return self.mesh.trace('B', self.chich).real
 
 
     def calc_double_occupancy(self):
@@ -235,18 +253,6 @@ class TPSC:
         self.xisp = 1/(np.pi - qHM - q0)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
     def calc_second_level_approx(self):
         """
         Function to calculate the self-energy in the second level of approximation of TPSC.
@@ -267,18 +273,16 @@ class TPSC:
         Vm = self.mesh.wn_to_tau('B', Vm)
 
         # Calculate the self-energy in (r,tau) space
-        self.selfEnergy = 0.5*(Vm*self.g1.gtaur+Vp*self.g1.gtaumr)
+        self.self_energy = 0.5*(Vm * self.g1_tau_r + Vp * self.g1_tau_mr)
 
         # Fourier transform
-        self.selfEnergy = self.mesh.r_to_k(self.selfEnergy)
-        self.selfEnergy = self.mesh.tau_to_wn('F', self.selfEnergy)
+        self.self_energy = self.mesh.r_to_k(self.self_energy)
+        self.self_energy = self.mesh.tau_to_wn('F', self.self_energy)
 
         # Calculate G2
-        self.g2 = GF(self.mesh)
         dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
-        self.mu2 = brentq(lambda m: self.g2.calcNfromG(self.dispersion[None, :, :] - m + self.selfEnergy) - self.n, dispersion_min, dispersion_max, disp=True)
-        self.g2.giwnk = self.g2.calcGiwnk(self.dispersion[None, :, :] - self.mu2 + self.selfEnergy)
-        return
+        self.mu2 = brentq(lambda m: calcNfromG(self.mesh, self.dispersion[None, :, :] - m + self.self_energy) - self.n, dispersion_min, dispersion_max, disp=True)
+        self.g2 = calcGiwnk(self.mesh, self.dispersion[None, :, :] - self.mu2 + self.self_energy)
 
 
     def check_self_consistency(self):
@@ -293,8 +297,8 @@ class TPSC:
         :meta private:
         """
         # Calculate the traces
-        self.traceSG1 = self.mesh.trace(self.selfEnergy * self.g1.giwnk, 'F')
-        self.traceSG2 = self.mesh.trace(self.selfEnergy * self.g2.giwnk, 'F')
+        self.traceSG1 = self.mesh.trace('F', self.self_energy * self.g1)
+        self.traceSG2 = self.mesh.trace('F', self.self_energy * self.g2)
 
         # Calculate the expected result
         self.exactTraceSelfG = self.U*self.docc-self.U*self.n*self.n/4
@@ -317,7 +321,7 @@ class TPSC:
             "Usp" : self.Usp,
             "Uch" : self.Uch,
             "doubleocc" : self.docc,
-            "Trace_chi1" : self.traceChi1,
+            "Trace_chi1" : self.traceChi,
             "Trace_Self2_G1" : self.traceSG1,
             "Trace_Self2_G2" : self.traceSG2,
             "Exact_Trace_Self2_G" : self.exactTraceSelfG,
@@ -352,7 +356,7 @@ class TPSC:
             "Usp" : self.Usp,
             "Uch" : self.Uch,
             "doubleocc" : self.docc,
-            "Trace_chi1" : [self.traceChi1.real, self.traceChi1.imag],
+            "Trace_chi" : [self.traceChi.real, self.traceChi.imag],
             "Trace_Self2_G1" : [self.traceSG1.real, self.traceSG1.imag],
             "Trace_Self2_G2" : [self.traceSG2.real, self.traceSG2.imag],
             "Exact_Trace_Self2_G" : self.exactTraceSelfG,
@@ -379,7 +383,7 @@ class TPSC:
         """
         inds = np.arange(Wn_range[0], Wn_range[1]+1, 1)
         ind_kpoint_node = self.mesh.get_ind_kpt(coordinates[0], coordinates[1])
-        vals_s2 = self.mesh.get_specific_wn("F", self.selfEnergy[:,ind_kpoint_node], inds)
+        vals_s2 = self.mesh.get_specific_wn("F", self.self_energy[:,ind_kpoint_node], inds)
         if ax is None:
             fig,ax = plt.subplots()
         ax.set_title("Self-energy node")

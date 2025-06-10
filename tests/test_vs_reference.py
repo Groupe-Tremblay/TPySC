@@ -32,7 +32,7 @@ def test_compare():
     dispersion = tpysc.dispersions.calcDispersion2DSquare(mesh, **parameters["dispersion"])
     obj = tpysc.TPSC(mesh, dispersion, **parameters["tpsc"])
 
-    results = obj.run()
+    results = obj.solve()
 
     print("this version:", results)
 

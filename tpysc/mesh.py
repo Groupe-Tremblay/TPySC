@@ -70,13 +70,13 @@ class Mesh2D:
         return obj_r
 
 
-    def k_to_mr(self,obj_k):
+    def k_to_mr(self, obj_k):
         """ Fourier transform from k-space to real space (with a - sign) """
         obj_r = np.fft.fftn(obj_k, axes=(1,2), norm="forward")
         return obj_r
 
 
-    def r_to_k(self,obj_r):
+    def r_to_k(self, obj_r):
         """ Fourier transform from real space to k-space """
         obj_k = np.fft.fftn(obj_r,axes=(1,2))
         return obj_k
@@ -157,7 +157,7 @@ class Mesh2D:
         return self._lagrange_extrapolation_zero_freq_nth_order(frequencies_interpolation, evaluated_data)
 
 
-    def trace(self, obj, statistic: str, tau_value: float = 0):
+    def trace(self, statistic: str, obj,  tau_value: float = 0):
         """
             TODO Documentation
         """
