@@ -23,6 +23,8 @@ class TpscPlus:
 
         self.Usp = -1
 
+        self.converged = False
+
 
 
     def solve(self,
@@ -70,12 +72,15 @@ class TpscPlus:
                 # Update chi2
                 self.calc_chi2()
 
-                # Calculate Usp and Uch from the TPSC ansatz
+                # Calculate Usp and Uch from the TPSC ansatz.
                 self.calc_usp()
                 self.tpsc_obj.calc_uch()
 
-                # Calculate the double occupancy
+                # Calculate the double occupancy.
                 self.docc = self.tpsc_obj.calc_double_occupancy()
+
+                # Perform the second level approx as usual.
+                self.tpsc_obj.calc_second_level_approx()
             else:
                 pass
                 # TODO Anderson acceleration that does not suck
@@ -92,11 +97,11 @@ class TpscPlus:
 
             if norm_conditions:
                 if (self.delta_p == True) and (self.prev_usp == 0) and (i > iter_min):
-                    converged = True
+                    self.converged = True
                     nIteFinal = i + 1
                     break
                 else :
-                    converged = False
+                    self.converged = False
 
             delta_ip1 = delta_i
 
@@ -106,7 +111,7 @@ class TpscPlus:
         else:
             logging.error("The TPSC+ calculation has not converged after {} iterations.".format(iter_max))
 
-        return converged
+        return self.converged
         #===========
 
 

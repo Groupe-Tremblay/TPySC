@@ -80,14 +80,18 @@ class Tpsc:
         # Calculate the Green function G1 at the first level of approximation of TPSC.
         self.calc_g1()
 
-        # Calculate chi1
+        # Calculate chi1.
         self.calc_chi1()
 
-        # Calculate Usp and Uch from the TPSC ansatz
+        # Calculate Usp and Uch from the TPSC ansatz.
         self.calc_usp()
         self.calc_uch()
 
-        # Calculate the double occupancy
+        # Calculate the spin and charge susceptibilities.
+        self.chisp = self.calc_chisp(self.Usp)
+        self.chich = self.calc_chich(self.Uch)
+
+        # Calculate the double occupancy.
         self.docc = self.calc_double_occupancy()
 
 
@@ -133,7 +137,11 @@ class Tpsc:
         Uspmax = 2./np.amax(self.chi1).real-1e-7 # Note: the 1e-7 is chosen for stability purposes
 
         # Calculate Usp
-        self.Usp = brentq(lambda m: self.calc_sum_chisp(m)-self.calc_sum_rule_chisp(m), Uspmin, Uspmax, disp=True)
+        #self.Usp = brentq(lambda u: self.calc_sum_chisp(u)-self.calc_sum_rule_chisp(u), Uspmin, Uspmax, disp=True)
+        self.Usp = brentq(lambda u: self.mesh.trace('B',self.calc_chisp(u)).real - self.calc_sum_rule_chisp(u),
+                          Uspmin,
+                          Uspmax,
+                          disp=True)
 
 
     def calc_uch(self, Uchmin=0., Uchmax=100.):
@@ -144,30 +152,24 @@ class Tpsc:
         :meta private:
         """
         # Calculate Uch
-        self.Uch = brentq(lambda m: self.calc_sum_chich(m)-self.calc_sum_rule_chich(self.Usp), Uchmin, Uchmax, disp=True)
+        self.Uch = brentq(lambda u: self.mesh.trace('B', self.calc_chich(u)).real-self.calc_sum_rule_chich(self.Usp),
+                          Uchmin,
+                          Uchmax,
+                          disp=True)
 
 
-    def calc_sum_chisp(self, Usp):
+    def calc_chisp(self, Usp: float):
         """
-        Function to compute the trace of chisp(q) = chi1(q)/(1-Usp/2*chi1(q)).
-        Also sets chisp(q,iqn) and finds the maximal value.
-
-        :meta private:
+        Computes chisp(q) = chi1(q)/(1-Usp/2*chi1(q)).
         """
-        self.chisp = self.chi1/ (1 - 0.5 * Usp * self.chi1)
-        self.chispmax = np.amax(self.chisp)
-        return self.mesh.trace('B', self.chisp).real
+        return  self.chi1/ (1 - 0.5 * Usp * self.chi1)
 
 
-    def calc_sum_chich(self, Uch):
+    def calc_chich(self, Uch: float):
         """
-        Function to compute the trace of chich(1) = chi1(q)/(1+Uch/2*chi1(q)).
-        Also sets chich(q,iqn).
-
-        :meta private:
+        Computes chisp(q) = chi1(q)/(1-Usp/2*chi1(q)).
         """
-        self.chich = self.chi1/(1+0.5*Uch*self.chi1)
-        return self.mesh.trace('B', self.chich).real
+        return  self.chi1 / (1 + 0.5 * Uch * self.chi1)
 
 
     def calc_double_occupancy(self):
@@ -180,10 +182,10 @@ class Tpsc:
 
         :meta private:
         """
-        if (self.n<1):
-            return self.Usp/self.U*self.n*self.n/4
+        if (self.n < 1):
+            return self.Usp /self.U * self.n * self.n / 4
         else:
-            return self.Usp/(4*self.U)*(2-self.n)*(2-self.n)-1+self.n
+            return self.Usp / (4 * self.U) * (2 - self.n) * (2 - self.n) - 1 + self.n
 
 
     def calc_sum_rule_chisp(self, Usp):
@@ -196,9 +198,9 @@ class Tpsc:
         :meta private:
         """
         if self.n<1:
-            return self.n - Usp/self.U*self.n*self.n/2
+            return self.n - Usp / self.U * self.n * self.n / 2
         else:
-            return self.n - Usp/(2*self.U)*(2-self.n)*(2-self.n)+2-2*self.n
+            return self.n - Usp / (2 * self.U) * (2 - self.n) * (2 - self.n) + 2 - 2 * self.n
 
 
     def calc_sum_rule_chich(self, Usp):
@@ -213,7 +215,7 @@ class Tpsc:
         if self.n<1:
             return self.n + Usp/self.U*self.n*self.n/2 - self.n*self.n
         else:
-            return self.n + Usp/(2*self.U)*(2-self.n)*(2-self.n)-2+2*self.n - self.n*self.n
+            return self.n + Usp/(2 * self.U)*(2-self.n)*(2-self.n)-2+2*self.n - self.n*self.n
 
 
     def calc_xisp_commensurate(self) -> float:

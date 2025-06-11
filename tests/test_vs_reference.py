@@ -37,7 +37,7 @@ def test_compare():
     print("this version:", results)
 
     # Load the reference results
-    with open("ref_f5dc1ce.json", 'r') as reference_filename:
+    with open("ref_tpsc.json", 'r') as reference_filename:
         reference_results = json.load(reference_filename)
     print("reference:", reference_results)
 
