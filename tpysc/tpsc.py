@@ -3,6 +3,7 @@ from .mesh import Mesh2D
 import matplotlib.pyplot as plt
 import json
 import numpy as np
+import logging
 
 from scipy.optimize import brentq
 
@@ -309,10 +310,15 @@ class Tpsc:
         :return: A dictionary containing main TPSC output
         :rtype: dict
         """
+        logging.basicConfig(level=logging.INFO)
+
+        logging.info('Start of TPSC calculations.')
         # Make the calculation
         self.calc_first_level_approx()
         self.calc_second_level_approx()
         self.check_self_consistency()
+
+        logging.info('End of TPSC calculations')
 
         # Prepare output
         self.main_results = {
