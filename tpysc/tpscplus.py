@@ -45,20 +45,33 @@ class TpscPlus:
         # First do a regular TPSC procedure.
         self.tpsc_obj.solve()
 
+        self.uch_tpsc = self.tpsc_obj.Uch # XXX
+        self.usp_tpsc = self.tpsc_obj.Usp # XXX
+        self.g2_tpsc = self.tpsc_obj.g2 # XXX
+        self.self_energy_tpsc = self.tpsc_obj.self_energy # XXX
+
         # TODO Comment this
         self.usp_max = usp_max
         self.prev_usp = 0
         delta_ip1 = 1. - 0.5 * self.Usp * self.chi2
 
         # TODO Do the TPSC+ loop.
-        converged = False
         logging.info("Start of TPSC+ self-consistent loop.")
         for i in range(iter_max):
             if anderson_acc == False:
 
                 if i > 0 and alpha > 0:
 
+                    self.uch_1_m_alpha = self.tpsc_obj.Uch
+                    self.usp_1_m_alpha = self.Usp
+                    self.chi2_1_m_alpha = self.tpsc_obj.chi1 #XXX
+                    self.chisp_1_m_alpha = self.tpsc_obj.chisp #XXX
+
+                    self.self_energy_1_m_alpha = self.tpsc_obj.self_energy # XXX
+                    self.self_energy_alpha = self.self_energy # XXX
+
                     self.self_energy = (1 - alpha) * self.tpsc_obj.self_energy + (alpha) * self.self_energy
+                    self.self_energy_j_1 = self.self_energy # XXX
 
                     # Compute the new G2
                     dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
@@ -68,13 +81,25 @@ class TpscPlus:
                     self.g2 = self.tpsc_obj.g2
                     self.self_energy = self.tpsc_obj.self_energy
 
+                    self.g2_j_0 = self.g2 # XXX
+                    self.self_energy_j_0 = self.self_energy # XXX
 
                 # Update chi2
                 self.calc_chi2()
 
                 # Calculate Usp and Uch from the TPSC ansatz.
+                self.chi2_j_0 = self.chi2 # XXX
+
                 self.calc_usp()
+                self.tpsc_obj.Usp = self.Usp
                 self.tpsc_obj.calc_uch()
+
+                self.usp_j_0 = self.Usp # XXX
+                self.uch_j_0 = self.tpsc_obj.Uch # XXX
+
+                # Calculate the spin and charge susceptibilities.
+                self.tpsc_obj.chisp = self.tpsc_obj.calc_chisp(self.Usp)
+                self.tpsc_obj.chich = self.tpsc_obj.calc_chich(self.tpsc_obj.Uch)
 
                 # Calculate the double occupancy.
                 self.docc = self.tpsc_obj.calc_double_occupancy()
@@ -85,13 +110,16 @@ class TpscPlus:
                 pass
                 # TODO Anderson acceleration that does not suck
 
-            #break
+
             # ===========
             # Check the convergence
             #correct the norm based on alpha
             delta_i = self.delta_out
+            self.delta_i = delta_i # XXX
+
             norm = np.linalg.norm((delta_ip1 - delta_i) / delta_i) / (1 - alpha)
             norm_inf = np.max(np.abs((delta_ip1 - delta_i) / delta_i)) / (1 - alpha)
+            print(norm, norm_inf)
 
             norm_conditions = (norm < msd2precision) or (norm_inf < msdInfprecision)
 
@@ -106,7 +134,7 @@ class TpscPlus:
             delta_ip1 = delta_i
 
 
-        if converged:
+        if self.converged:
             logging.info("The TPSC+ calculation has converged after {} iterations.".format(nIteFinal))
         else:
             logging.error("The TPSC+ calculation has not converged after {} iterations.".format(iter_max))
@@ -133,11 +161,20 @@ class TpscPlus:
         #           But it will at least provide a value of Usp that can make it to the next iteration being a possible value that is less than usp_max.
         #       - I saw that sometimes the first iterations of TPSC+ does not have a solution, there is not crossing between sumChisp and sumruleChisp.
         #           Probably because the other values of Usp, Uch and double occupation are not optimized.
-        if (self.calc_sum_chisp(usp_min)-self.calc_sum_rule_chisp(usp_min))*(self.calc_sum_chisp(usp_max_h)-self.calc_sum_rule_chisp(usp_max_h))<0:
+        self.usp_min_j_0 = usp_min # XXX
+        self.usp_max_h_j_0 = usp_max_h # XXX
+
+        f_usp_min = self.mesh.trace('B', self.calc_chisp(usp_min)).real - self.calc_sum_rule_chisp(usp_min)
+        f_usp_max = self.mesh.trace('B', self.calc_chisp(usp_max_h)).real - self.calc_sum_rule_chisp(usp_max_h)
+
+        if f_usp_min * f_usp_max < 0:
             if self.prev_usp > 0 :
                 self.prev_usp = self.prev_usp - 1
-            self.Usp = brentq(lambda m: self.calc_sum_chisp(m)-self.calc_sum_rule_chisp(m), usp_min, usp_max_h, disp=True)
 
+            self.Usp = brentq(lambda u: self.mesh.trace('B', self.calc_chisp(u)).real- self.calc_sum_rule_chisp(u),
+                              usp_min,
+                              usp_max_h,
+                              disp=True)
 
         else:
             self.guess_Usp_flag = True
@@ -156,7 +193,7 @@ class TpscPlus:
                 print("self.newTemp and self.logdelta!=0.")
                 # Guess a value of Usp from the interpolation with the log(Delta)
                 # Delta = 1 - Usp/usp_max. Supposedly the relation with the temperature is log(Delta) \propto 1/T
-                usp_guess = usp_max_h*(1. - np.exp(self.logdelta)).real-1e-5
+                usp_guess = usp_max_h * (1. - np.exp(self.logdelta)).real - 1e-5
 
                 # Set the real initial guess value lower than usp_guess so it is on the other side of the functions crossing.
                 # If Usp is too near the real answer, it can be on the same side as usp_max and brentq does not find the roots.
@@ -173,36 +210,37 @@ class TpscPlus:
                     if not self.delta_p:
                         # If self.delta_p is Fasle, that means that Usp is larger than usp_max. Which is not good : Chisp would then be negative.
                         # We give a new guess to Usp so it is smaller than usp_max hopefully
-                        usp_guess = usp_max_h - gamma*(self.Usp_prevT-self.usp_max)
+                        usp_guess = usp_max_h - gamma * (self.Usp_prevT - self.usp_max)
                         usp_min = usp_guess + self.delta_out_1
-                # XXX The code wil never reach below this???
 
-                # elif self.delta_out_1!=0. :
-                #     print("self.delta_out_1!=0.")
-                #     usp_guess = usp_max_h - self.gamma*(self.usp_max-self.Usp_prevT)
-                #     usp_min = usp_guess*self.gamma
-                #     if not self.delta_p: # If Delta is smaller than 0, the above equation would make the new guess for Usp go even beyond usp_max again, so we changed the sign.
-                #         usp_guess = usp_max_h - self.gamma*(self.Usp_prevT-self.usp_max)
-                #         usp_min = usp_guess + self.delta_out_1
+                elif self.delta_out_1!=0. : # XXX WILL NEVER ENTER HERE (newTemp has already been checked to be True, see elif above)
+                    print("self.delta_out_1!=0.")
+                    usp_guess = usp_max_h - self.gamma*(self.usp_max-self.Usp_prevT)
+                    usp_min = usp_guess*self.gamma
+                    if not self.delta_p: # If Delta is smaller than 0, the above equation would make the new guess for Usp go even beyond usp_max again, so we changed the sign.
+                        usp_guess = usp_max_h - self.gamma*(self.Usp_prevT-self.usp_max)
+                        usp_min = usp_guess + self.delta_out_1
 
-                # else :
-                #     print("else")
-                #     usp_guess = usp_max_h*self.gamma # Arbitrary chosen to remove Usp*0.1 so it is proportionnal and smaller.
+                else :
+                    print("else")
+                    usp_guess = usp_max_h*self.gamma # Arbitrary chosen to remove Usp*0.1 so it is proportionnal and smaller.
 
 
                 # Making sure that usp_min is on the "right" side of the functions' crossing for brentq,
                 # If not, we reinitialize usp_min to 0.
 
-                if (self.calc_sum_chisp(usp_min)-self.calcSumRuleChisp(usp_min))>0:
+                if (self.calc_sum_chisp(usp_min) - self.calc_sum_rule_chisp(usp_min)) > 0:
                     usp_min = 0.
                 if usp_max_h < usp_min:
                     usp_min = 0.
 
                 # ------------- Setting the value of Usp -------------------
                 # -- 1st option : Retry with the new values of usp_min
-                if (self.calc_sum_chisp(usp_min)-self.calcSumRuleChisp(usp_min))*(self.calc_sum_chisp(usp_max_h)-self.calcSumRuleChisp(usp_max_h))<0:
+                f_usp_min = self.calc_sum_chisp(usp_min) - self.calc_sum_rule_chisp(usp_min)
+                f_usp_max = self.calc_sum_chisp(usp_max_h) - self.calc_sum_rule_chisp(usp_max_h)
+                if f_usp_min * f_usp_max < 0:
                     print("Usp found with Brentq with guessed usp_min")
-                    self.Usp = brentq(lambda m: self.calc_sum_chisp(m)-self.calcSumRuleChisp(m), usp_min, usp_max_h, disp=True)
+                    self.Usp = brentq(lambda u: self.calc_sum_chisp(u)-self.calcSumRuleChisp(u), usp_min, usp_max_h, disp=True)
 
                 # -- 2nd option : Set Usp from an eduacted guess
                 elif usp_guess > 0 and usp_guess < usp_max_h :
@@ -216,7 +254,6 @@ class TpscPlus:
 
 
         #  ---- Setting the new values for the next iteration ----
-
         self.delta_out = 1. - 0.5 * self.Usp * self.chi2 # To use for the convergence check.
         self.usp_max = usp_max_h # Save the actual usp_max for the next iteration
         self.delta_out_1 = 1. - self.Usp/(self.usp_max + 1e-7) # Delta at Q=q_max. + Recover the exact value of usp_max to it.
@@ -302,9 +339,9 @@ class TpscPlus:
         self.tpsc_obj.docc = value
 
 
-    def calc_sum_chisp(self, usp: float):
-        return self.tpsc_obj.calc_sum_chisp(usp)
-
-
     def calc_sum_rule_chisp(self, usp: float):
         return self.tpsc_obj.calc_sum_rule_chisp(usp)
+
+
+    def calc_chisp(self, usp: float):
+        return self.tpsc_obj.calc_chisp(usp)

@@ -36,8 +36,8 @@ class Tpsc:
     def __init__(self,
                  mesh: Mesh2D,
                  dispersion: np.ndarray,
-                 U: float,
-                 n: float,
+                 U,
+                 n,
                  ):
 
         self.mesh = mesh
@@ -138,7 +138,7 @@ class Tpsc:
 
         # Calculate Usp
         #self.Usp = brentq(lambda u: self.calc_sum_chisp(u)-self.calc_sum_rule_chisp(u), Uspmin, Uspmax, disp=True)
-        self.Usp = brentq(lambda u: self.mesh.trace('B',self.calc_chisp(u)).real - self.calc_sum_rule_chisp(u),
+        self.Usp = brentq(lambda u: self.mesh.trace('B', self.calc_chisp(u)).real - self.calc_sum_rule_chisp(u),
                           Uspmin,
                           Uspmax,
                           disp=True)
@@ -158,18 +158,18 @@ class Tpsc:
                           disp=True)
 
 
-    def calc_chisp(self, Usp: float):
+    def calc_chisp(self, usp):
         """
-        Computes chisp(q) = chi1(q)/(1-Usp/2*chi1(q)).
+        Computes chisp(q) = chi1(q)/(1 - Usp/2 * chi1(q)).
         """
-        return  self.chi1/ (1 - 0.5 * Usp * self.chi1)
+        return  self.chi1/ (1 - 0.5 * usp * self.chi1)
 
 
-    def calc_chich(self, Uch: float):
+    def calc_chich(self, uch):
         """
-        Computes chisp(q) = chi1(q)/(1-Usp/2*chi1(q)).
+        Computes chich(q) = chi1(q)/(1 + Uch/2 * chi1(q)).
         """
-        return  self.chi1 / (1 + 0.5 * Uch * self.chi1)
+        return  self.chi1 / (1 + 0.5 * uch * self.chi1)
 
 
     def calc_double_occupancy(self):
@@ -218,7 +218,7 @@ class Tpsc:
             return self.n + Usp/(2 * self.U)*(2-self.n)*(2-self.n)-2+2*self.n - self.n*self.n
 
 
-    def calc_xisp_commensurate(self) -> float:
+    def calc_xisp_commensurate(self):
         """
         Compute the spin correlation length from commensurate spin fluctuations at Q=(pi,pi).
         This calculates the width at half maximum of the spin susceptibility ONLY if its maximal value is at (pi,pi).
@@ -265,7 +265,7 @@ class Tpsc:
         :meta private:
         """
         # Get V(iqn,q)
-        V = self.U/8*(3.*self.Usp*(self.chisp)+self.Uch*(self.chich))
+        V = self.U/8.*(3.*self.Usp*(self.chisp)+self.Uch*(self.chich))
 
         # Get V(tau,r)
         Vp = self.mesh.k_to_r(V)
