@@ -45,15 +45,10 @@ class TpscPlus:
         # First do a regular TPSC procedure.
         self.tpsc_obj.solve()
 
-        self.uch_tpsc = self.tpsc_obj.Uch # XXX
-        self.usp_tpsc = self.tpsc_obj.Usp # XXX
-        self.g2_tpsc = self.tpsc_obj.g2 # XXX
-        self.self_energy_tpsc = self.tpsc_obj.self_energy # XXX
-
         # TODO Comment this
         self.usp_max = usp_max
         self.prev_usp = 0
-        delta_ip1 = 1. - 0.5 * self.Usp * self.chi2
+        delta_ip1 = 1. - 0.5 * self.tpsc_obj.Usp * self.chi2
 
         # TODO Do the TPSC+ loop.
         logging.info("Start of TPSC+ self-consistent loop.")
@@ -81,21 +76,13 @@ class TpscPlus:
                     self.g2 = self.tpsc_obj.g2
                     self.self_energy = self.tpsc_obj.self_energy
 
-                    self.g2_j_0 = self.g2 # XXX
-                    self.self_energy_j_0 = self.self_energy # XXX
-
                 # Update chi2
                 self.calc_chi2()
 
                 # Calculate Usp and Uch from the TPSC ansatz.
-                self.chi2_j_0 = self.chi2 # XXX
-
                 self.calc_usp()
                 self.tpsc_obj.Usp = self.Usp
                 self.tpsc_obj.calc_uch()
-
-                self.usp_j_0 = self.Usp # XXX
-                self.uch_j_0 = self.tpsc_obj.Uch # XXX
 
                 # Calculate the spin and charge susceptibilities.
                 self.tpsc_obj.chisp = self.tpsc_obj.calc_chisp(self.Usp)
@@ -106,6 +93,7 @@ class TpscPlus:
 
                 # Perform the second level approx as usual.
                 self.tpsc_obj.calc_second_level_approx()
+
             else:
                 pass
                 # TODO Anderson acceleration that does not suck
@@ -115,7 +103,6 @@ class TpscPlus:
             # Check the convergence
             #correct the norm based on alpha
             delta_i = self.delta_out
-            self.delta_i = delta_i # XXX
 
             norm = np.linalg.norm((delta_ip1 - delta_i) / delta_i) / (1 - alpha)
             norm_inf = np.max(np.abs((delta_ip1 - delta_i) / delta_i)) / (1 - alpha)
@@ -161,9 +148,6 @@ class TpscPlus:
         #           But it will at least provide a value of Usp that can make it to the next iteration being a possible value that is less than usp_max.
         #       - I saw that sometimes the first iterations of TPSC+ does not have a solution, there is not crossing between sumChisp and sumruleChisp.
         #           Probably because the other values of Usp, Uch and double occupation are not optimized.
-        self.usp_min_j_0 = usp_min # XXX
-        self.usp_max_h_j_0 = usp_max_h # XXX
-
         f_usp_min = self.mesh.trace('B', self.calc_chisp(usp_min)).real - self.calc_sum_rule_chisp(usp_min)
         f_usp_max = self.mesh.trace('B', self.calc_chisp(usp_max_h)).real - self.calc_sum_rule_chisp(usp_max_h)
 
