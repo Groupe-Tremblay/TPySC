@@ -20,11 +20,14 @@ class TpscPlus:
 
         self.g2 = None
         self.self_energy = None
+        self.mu2 = None
 
         self.Usp = -1
 
-        self.converged = False
+        self.main_results  = {}
 
+        self.trace_chi2 = None
+        self.converged = False
 
 
     def solve(self,
@@ -43,7 +46,7 @@ class TpscPlus:
         logging.info("Start of TPSC+ calculations.")
 
         # First do a regular TPSC procedure.
-        self.tpsc_obj.solve()
+        tpsc_results = self.tpsc_obj.solve()
 
         # TODO Comment this
         self.usp_max = usp_max
@@ -56,17 +59,7 @@ class TpscPlus:
             if anderson_acc == False:
 
                 if i > 0 and alpha > 0:
-
-                    self.uch_1_m_alpha = self.tpsc_obj.Uch
-                    self.usp_1_m_alpha = self.Usp
-                    self.chi2_1_m_alpha = self.tpsc_obj.chi1 #XXX
-                    self.chisp_1_m_alpha = self.tpsc_obj.chisp #XXX
-
-                    self.self_energy_1_m_alpha = self.tpsc_obj.self_energy # XXX
-                    self.self_energy_alpha = self.self_energy # XXX
-
                     self.self_energy = (1 - alpha) * self.tpsc_obj.self_energy + (alpha) * self.self_energy
-                    self.self_energy_j_1 = self.self_energy # XXX
 
                     # Compute the new G2
                     dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
@@ -106,7 +99,6 @@ class TpscPlus:
 
             norm = np.linalg.norm((delta_ip1 - delta_i) / delta_i) / (1 - alpha)
             norm_inf = np.max(np.abs((delta_ip1 - delta_i) / delta_i)) / (1 - alpha)
-            print(norm, norm_inf)
 
             norm_conditions = (norm < msd2precision) or (norm_inf < msdInfprecision)
 
@@ -126,7 +118,24 @@ class TpscPlus:
         else:
             logging.error("The TPSC+ calculation has not converged after {} iterations.".format(iter_max))
 
-        return self.converged
+        # Check consistency
+        self.trace_chi2 = self.mesh.trace('B', self.chi2)
+        self.tpsc_obj.check_self_consistency()
+
+        # Prepare output
+        self.main_results = {
+            "Usp" : self.Usp,
+            "Uch" : self.Uch,
+            "doubleocc" : self.docc,
+            "Trace_chi2" : self.trace_chi2,
+            "Trace_Self2_G1" : self.tpsc_obj.trace_self_g1,
+            "Trace_Self2_G2" : self.tpsc_obj.trace_self_g2,
+            "Exact_Trace_Self2_G" : self.tpsc_obj.exact_trace_self_g,
+            "mu1" : self.mu1,
+            "mu2" : self.mu2,
+            "converged": self.converged
+        }
+        return self.main_results
         #===========
 
 
@@ -266,6 +275,15 @@ class TpscPlus:
         # TODO calculer la trace de cet affaire là
 
 
+    def __str__(self) -> str:
+        # if self.main_results is {}:
+        #     return "TPSC was not run, please run the TPSC before printing the results."
+
+        string = ""
+        for key,value in self.main_results.items():
+            string += f"{key:<20}: {value:5e}\n"
+
+        return string
 
     # --- Wrapper of the Tpsc class ---
     @property
@@ -311,6 +329,11 @@ class TpscPlus:
     @property
     def mu1(self):
         return self.tpsc_obj.mu1
+
+
+    @property
+    def Uch(self):
+        return self.tpsc_obj.Uch
 
 
     @property

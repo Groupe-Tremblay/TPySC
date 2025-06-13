@@ -66,8 +66,8 @@ class Tpsc:
         self.Usp = -1.0
         self.docc = -1.0
 
-        self.traceSG1 = None
-        self.traceSG2 = None
+        self.trace_self_g1 = None
+        self.trace_self_g1 = None
 
 
     def calc_first_level_approx(self):
@@ -80,8 +80,9 @@ class Tpsc:
         # Calculate the Green function G1 at the first level of approximation of TPSC.
         self.calc_g1()
 
-        # Calculate chi1.
+        # Calculate chi1 and its trace.
         self.calc_chi1()
+        self.trace_chi1 = self.mesh.trace('B', self.chi1)
 
         # Calculate Usp and Uch from the TPSC ansatz.
         self.calc_usp()
@@ -122,8 +123,6 @@ class Tpsc:
         # Fourier transform to (q,iqn)
         self.chi1 = self.mesh.r_to_k(self.chi1)
         self.chi1 = self.mesh.tau_to_wn('B', self.chi1)
-
-        self.traceChi = self.mesh.trace('B', self.chi1)
 
 
     def calc_usp(self):
@@ -298,11 +297,11 @@ class Tpsc:
         :meta private:
         """
         # Calculate the traces
-        self.traceSG1 = self.mesh.trace('F', self.self_energy * self.g1)
-        self.traceSG2 = self.mesh.trace('F', self.self_energy * self.g2)
+        self.trace_self_g1 = self.mesh.trace('F', self.self_energy * self.g1)
+        self.trace_self_g2 = self.mesh.trace('F', self.self_energy * self.g2)
 
         # Calculate the expected result
-        self.exactTraceSelfG = self.U*self.docc-self.U*self.n*self.n/4
+        self.exact_trace_self_g = self.U * self.docc - self.U * self.n * self.n / 4
 
 
     def solve(self):
@@ -327,10 +326,10 @@ class Tpsc:
             "Usp" : self.Usp,
             "Uch" : self.Uch,
             "doubleocc" : self.docc,
-            "Trace_chi1" : self.traceChi,
-            "Trace_Self2_G1" : self.traceSG1,
-            "Trace_Self2_G2" : self.traceSG2,
-            "Exact_Trace_Self2_G" : self.exactTraceSelfG,
+            "Trace_chi1" : self.trace_chi1,
+            "Trace_Self2_G1" : self.trace_self_g1,
+            "Trace_Self2_G2" : self.trace_self_g2,
+            "Exact_Trace_Self2_G" : self.exact_trace_self_g,
             "mu1" : self.mu1,
             "mu2" : self.mu2,
         }
@@ -362,10 +361,10 @@ class Tpsc:
             "Usp" : self.Usp,
             "Uch" : self.Uch,
             "doubleocc" : self.docc,
-            "Trace_chi" : [self.traceChi.real, self.traceChi.imag],
-            "Trace_Self2_G1" : [self.traceSG1.real, self.traceSG1.imag],
-            "Trace_Self2_G2" : [self.traceSG2.real, self.traceSG2.imag],
-            "Exact_Trace_Self2_G" : self.exactTraceSelfG,
+            "Trace_chi" : [self.trace_chi1.real, self.trace_chi1.imag],
+            "Trace_Self2_G1" : [self.trace_self_g1.real, self.trace_self_g1.imag],
+            "Trace_Self2_G2" : [self.trace_self_g2.real, self.trace_self_g2.imag],
+            "Exact_Trace_Self2_G" : self.exact_trace_self_g,
             "mu1" : self.mu1,
             "mu2" : self.mu2,
         }
