@@ -34,7 +34,6 @@ class TpscPlus:
               msdInfprecision: float = 1e-3,
               iter_max: int = 1_000,
               iter_min: int = 30,
-              anderson_acc: bool = False,
               usp_max: float = 0.,
               ) -> None:
         """
@@ -51,47 +50,38 @@ class TpscPlus:
         self.prev_usp = 0
         delta_ip1 = 1. - 0.5 * self.tpsc_obj.Usp * self.chi2
 
-        # TODO Do the TPSC+ loop.
+        # Do the TPSC+ loop.
         logging.info("Start of TPSC+ self-consistent loop.")
         for i in range(iter_max):
-            if anderson_acc == False: # Regular TPSC+ loop.
+            if i > 0 and alpha > 0:
+                self.self_energy = (1 - alpha) * self.tpsc_obj.self_energy + (alpha) * self.self_energy
 
-                if i > 0 and alpha > 0:
-                    self.self_energy = (1 - alpha) * self.tpsc_obj.self_energy + (alpha) * self.self_energy
-
-                    # Compute the new G2
-                    dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
-                    self.mu2 = brentq(lambda m: calcNfromG(self.mesh, self.dispersion[None, :, :] - m + self.self_energy) - self.n, dispersion_min, dispersion_max, disp=True)
-                    self.g2 = calcGiwnk(self.mesh, self.dispersion[None, :, :] - self.mu2 + self.self_energy)
-                else:
-                    self.g2 = self.tpsc_obj.g2
-                    self.self_energy = self.tpsc_obj.self_energy
-
-                # Update chi2
-                self.calc_chi2()
-
-                # Calculate Usp and Uch from the TPSC ansatz.
-                self.calc_usp()
-                self.tpsc_obj.calc_uch()
-
-                # Calculate the spin and charge susceptibilities.
-                self.tpsc_obj.chisp = self.tpsc_obj.calc_chisp(self.Usp)
-                self.tpsc_obj.chich = self.tpsc_obj.calc_chich(self.tpsc_obj.Uch)
-
-                # Calculate the double occupancy.
-                self.docc = self.tpsc_obj.calc_double_occupancy()
-
-                # Perform the second level approx as usual.
-                self.tpsc_obj.calc_second_level_approx()
-
+                # Compute the new G2
+                dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
+                self.mu2 = brentq(lambda m: calcNfromG(self.mesh, self.dispersion[None, :, :] - m + self.self_energy) - self.n, dispersion_min, dispersion_max, disp=True)
+                self.g2 = calcGiwnk(self.mesh, self.dispersion[None, :, :] - self.mu2 + self.self_energy)
             else:
-                pass
-                # TODO Anderson acceleration that does not suck
+                self.g2 = self.tpsc_obj.g2
+                self.self_energy = self.tpsc_obj.self_energy
 
+            # Update chi2
+            self.calc_chi2()
 
-            # ===========
+            # Calculate Usp and Uch from the TPSC ansatz.
+            self.calc_usp()
+            self.tpsc_obj.calc_uch()
+
+            # Calculate the spin and charge susceptibilities.
+            self.tpsc_obj.chisp = self.tpsc_obj.calc_chisp(self.Usp)
+            self.tpsc_obj.chich = self.tpsc_obj.calc_chich(self.tpsc_obj.Uch)
+
+            # Calculate the double occupancy.
+            self.docc = self.tpsc_obj.calc_double_occupancy()
+
+            # Perform the second level approx as usual.
+            self.tpsc_obj.calc_second_level_approx()
+
             # Check the convergence
-            #correct the norm based on alpha
             delta_i = self.delta_out
 
             norm = np.linalg.norm((delta_ip1 - delta_i) / delta_i) / (1 - alpha)
@@ -133,7 +123,6 @@ class TpscPlus:
             "converged": self.converged
         }
         return self.main_results
-        #===========
 
 
     def calc_usp(self):
@@ -268,8 +257,6 @@ class TpscPlus:
         # Fourier transform
         V = self.mesh.r_to_k(V)
         self.chi2 = self.mesh.tau_to_wn('B', V)
-
-        # TODO calculer la trace de cet affaire là
 
 
     def __str__(self) -> str:
