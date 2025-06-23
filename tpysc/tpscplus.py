@@ -93,9 +93,11 @@ class TpscPlus:
                 if (self.delta_p == True) and (self.prev_usp == 0) and (i > iter_min):
                     self.converged = True
                     nIteFinal = i + 1
+
+                    # Update to last values of G^(2) and self-energy.
+                    self.g2 = self.tpsc_obj.g2
+                    self.self_energy = self.tpsc_obj.self_energy
                     break
-                else :
-                    self.converged = False
 
             delta_ip1 = delta_i
 
@@ -136,7 +138,6 @@ class TpscPlus:
         if self.usp_max == 0. :
             self.usp_max = usp_max_h - 1e-5
 
-
         # ----- Calculation of Usp with brentq. -----
         #       - If f(usp_min) and f(usp_max) have the same sign, we set Usp with the usp_guess and a proportion (gamma) of delta.
         #           This way, the algorithm can continue and, of course, it will not converge with this Usp.
@@ -166,7 +167,6 @@ class TpscPlus:
             #       3. Third one is from the previous iteration :
             #           It uses the values of Usp and usp_max to guess usp_min
             #       4. Fourth one is when none of the above is the case
-
             if self.newTemp and self.logdelta!=0.:
                 gamma = 0.8 # gamma can be between 0 and 1.
                 print("self.newTemp and self.logdelta!=0.")
@@ -199,15 +199,11 @@ class TpscPlus:
                     if not self.delta_p: # If Delta is smaller than 0, the above equation would make the new guess for Usp go even beyond usp_max again, so we changed the sign.
                         usp_guess = usp_max_h - self.gamma*(self.Usp_prevT-self.usp_max)
                         usp_min = usp_guess + self.delta_out_1
-
                 else :
-                    print("else")
                     usp_guess = usp_max_h*self.gamma # Arbitrary chosen to remove Usp*0.1 so it is proportionnal and smaller.
-
 
                 # Making sure that usp_min is on the "right" side of the functions' crossing for brentq,
                 # If not, we reinitialize usp_min to 0.
-
                 if (self.calc_sum_chisp(usp_min) - self.calc_sum_rule_chisp(usp_min)) > 0:
                     usp_min = 0.
                 if usp_max_h < usp_min:
@@ -231,12 +227,10 @@ class TpscPlus:
                     self.newTemp = self.newTemp + 5
                     self.Usp = usp_max_h*gamma
 
-
         #  ---- Setting the new values for the next iteration ----
         self.delta_out = 1. - 0.5 * self.Usp * self.chi2 # To use for the convergence check.
         self.usp_max = usp_max_h # Save the actual usp_max for the next iteration
         self.delta_out_1 = 1. - self.Usp/(self.usp_max + 1e-7) # Delta at Q=q_max. + Recover the exact value of usp_max to it.
-
 
         # ---- Checking the validity of the value of Usp found. ----
         # If self.delta_p is True, the algorithm can converge.
@@ -251,8 +245,7 @@ class TpscPlus:
         TODO Documentation
         """
         g2_tau_r, g2_tau_mr = transform_g_to_direct_space(self.mesh, self.g2)
-
-        V = self.g1_tau_r * g2_tau_mr[::-1, :] + g2_tau_r * self.g1_tau_mr[::-1, :]
+        V = self.tpsc_obj.g1_tau_r * g2_tau_mr[::-1, :] + g2_tau_r * self.tpsc_obj.g1_tau_mr[::-1, :]
 
         # Fourier transform
         V = self.mesh.r_to_k(V)
@@ -288,16 +281,6 @@ class TpscPlus:
     @property
     def g1(self):
         return self.tpsc_obj.g1
-
-
-    @property
-    def g1_tau_r(self):
-        return self.tpsc_obj.g1_tau_r
-
-
-    @property
-    def g1_tau_mr(self):
-        return self.tpsc_obj.g1_tau_mr
 
 
     @property
