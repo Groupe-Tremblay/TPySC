@@ -22,8 +22,6 @@ class TpscPlus:
         self.self_energy = None
         self.mu2 = None
 
-        self.Usp = -1
-
         self.main_results  = {}
 
         self.trace_chi2 = None
@@ -56,7 +54,7 @@ class TpscPlus:
         # TODO Do the TPSC+ loop.
         logging.info("Start of TPSC+ self-consistent loop.")
         for i in range(iter_max):
-            if anderson_acc == False:
+            if anderson_acc == False: # Regular TPSC+ loop.
 
                 if i > 0 and alpha > 0:
                     self.self_energy = (1 - alpha) * self.tpsc_obj.self_energy + (alpha) * self.self_energy
@@ -74,7 +72,6 @@ class TpscPlus:
 
                 # Calculate Usp and Uch from the TPSC ansatz.
                 self.calc_usp()
-                self.tpsc_obj.Usp = self.Usp
                 self.tpsc_obj.calc_uch()
 
                 # Calculate the spin and charge susceptibilities.
@@ -329,6 +326,16 @@ class TpscPlus:
     @property
     def mu1(self):
         return self.tpsc_obj.mu1
+
+
+    @property
+    def Usp(self):
+        return self.tpsc_obj.Usp
+
+
+    @Usp.setter
+    def Usp(self, value):
+        self.tpsc_obj.Usp = value
 
 
     @property
