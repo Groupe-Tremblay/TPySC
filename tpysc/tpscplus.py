@@ -92,21 +92,18 @@ class TpscPlus:
             if norm_conditions:
                 if (self.delta_p == True) and (self.prev_usp == 0) and (i > iter_min):
                     self.converged = True
-                    nIteFinal = i + 1
-
-                    # Update to last values of G^(2) and self-energy.
-                    self.g2 = self.tpsc_obj.g2
-                    self.self_energy = self.tpsc_obj.self_energy
                     break
 
             delta_ip1 = delta_i
 
-
         if self.converged:
-            logging.info("The TPSC+ calculation has converged after {} iterations.".format(nIteFinal))
+            logging.info("The TPSC+ calculation has converged after {} iterations.".format(i+1))
         else:
             logging.error("The TPSC+ calculation has not converged after {} iterations.".format(iter_max))
 
+        # Update to last values of G^(2) and self-energy.
+        self.g2 = self.tpsc_obj.g2
+        self.self_energy = self.tpsc_obj.self_energy
         # Check consistency
         self.trace_chi2 = self.mesh.trace('B', self.chi2)
         self.tpsc_obj.check_self_consistency()
