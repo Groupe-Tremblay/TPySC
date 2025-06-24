@@ -35,6 +35,9 @@ class TpscPlus:
               iter_max: int = 1_000,
               iter_min: int = 30,
               usp_max: float = 0.,
+              usp_prev_T: float = 0.,
+              self_energy: np.ndarray = None,
+              new_temp: float = 0,
               ) -> None:
         """
         TODO Documentation
@@ -42,18 +45,53 @@ class TpscPlus:
         logging.basicConfig(level=logging.DEBUG)
         logging.info("Start of TPSC+ calculations.")
 
-        # First do a regular TPSC procedure.
-        tpsc_results = self.tpsc_obj.solve()
-
-        # TODO Comment this
         self.usp_max = usp_max
         self.prev_usp = 0. # XXX THAT DOES THIS DO
-        self.usp_prev_T = 0.
+        self.usp_prev_T = usp_prev_T
+
+        # First do a regular TPSC procedure.
+        # Calculate the Green function G1 at the first level of approximation of TPSC.
+        self.tpsc_obj.calc_g1()
+
+        if self_energy is None:
+            self.tpsc_obj.calc_chi1()
+            self.tpsc_obj.calc_usp()
+        else:
+            # Set the self-energy
+            if np.shape(self_energy)[0] < len(self.mesh.iwn_f): # Check if len(selfE) < len(iwn)
+                diffshape = len(self.mesh.iwn_f) - np.shape(self_energy)[0] # If so, gets the difference in lengths
+                self.self_energy = np.zeros(self.mesh.shape, dtype=complex) # Empty array to fill
+                self.self_energy[diffshape//2:-diffshape//2,:] = self_energy
+
+            # Compute the new G2
+            dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
+            self.mu2 = brentq(lambda m: calcNfromG(self.mesh, self.dispersion[None, :, :] - m + self.self_energy) - self.n, dispersion_min, dispersion_max, disp=True)
+            self.g2 = calcGiwnk(self.mesh, self.dispersion[None, :, :] - self.mu2 + self.self_energy)
+
+            # Update chi2
+            self.calc_chi2()
+
+            # Calculate Usp and Uch from the TPSC ansatz.
+            self.calc_usp()
+
+        self.tpsc_obj.calc_uch()
+
+        # Calculate the spin and charge susceptibilities.
+        self.tpsc_obj.chisp = self.tpsc_obj.calc_chisp(self.Usp)
+        self.tpsc_obj.chich = self.tpsc_obj.calc_chich(self.tpsc_obj.Uch)
+
+        # Calculate the double occupancy.
+        self.docc = self.tpsc_obj.calc_double_occupancy()
+
+        # Perform the second level approx as usual.
+        self.tpsc_obj.calc_second_level_approx()
+
+
+        # TODO Comment this
         delta_ip1 = 1. - 0.5 * self.tpsc_obj.Usp * self.chi2
 
         # XXX This makes no sense
-        self.newTemp = False
-        self.logdelta = 0.
+        self.newTemp = new_temp
 
         # Do the TPSC+ loop.
         logging.info("Start of TPSC+ self-consistent loop.")
@@ -145,11 +183,11 @@ class TpscPlus:
             self.usp_max = usp_max_h - 1e-5
 
         # ----- Calculation of Usp with brentq. -----
-        #       - If f(usp_min) and f(usp_max) have the same sign, we set Usp with the usp_guess and a proportion (gamma) of delta.
-        #           This way, the algorithm can continue and, of course, it will not converge with this Usp.
-        #           But it will at least provide a value of Usp that can make it to the next iteration being a possible value that is less than usp_max.
-        #       - I saw that sometimes the first iterations of TPSC+ does not have a solution, there is not crossing between sumChisp and sumruleChisp.
-        #           Probably because the other values of Usp, Uch and double occupation are not optimized.
+        # - If f(usp_min) and f(usp_max) have the same sign, we set Usp with the usp_guess and a proportion (gamma) of delta.
+        #   This way, the algorithm can continue and, of course, it will not converge with this Usp.
+        #   But it will at least provide a value of Usp that can make it to the next iteration being a possible value that is less than usp_max.
+        # - I saw that sometimes the first iterations of TPSC+ does not have a solution, there is not crossing between sumChisp and sumruleChisp.
+        #   Probably because the other values of Usp, Uch and double occupation are not optimized.
         f_usp_min = self.mesh.trace('B', self.calc_chisp(usp_min)).real - self.calc_sum_rule_chisp(usp_min)
         f_usp_max = self.mesh.trace('B', self.calc_chisp(usp_max_h)).real - self.calc_sum_rule_chisp(usp_max_h)
 
@@ -168,30 +206,16 @@ class TpscPlus:
             self.prev_usp = 5
 
             # ----  Choosing from which technique we guess the value of usp_min ----
-            #       1. The first one is From the Previous Temperature and from the interpolation of log Delta and 1/T.
-            #       2. The second one is from the previous Temperature and when there is no logdelta provided (For example the first temperatures done in a calculations)
-            #           It uses the values of Usp and usp_max to guess usp_min
-            #       3. Third one is from the previous iteration :
-            #           It uses the values of Usp and usp_max to guess usp_min
-            #       4. Fourth one is when none of the above is the case
+            # 1. The first one is from the previous temperature.
+            #    It uses the values of Usp and usp_max to guess usp_min
+            # 2. Second one is from the previous iteration :
+            #    It uses the values of Usp and usp_max to guess usp_min
+            # 3. Third one is when none of the above is the case
             gamma = 0.8 # gamma can be between 0 and 1.
-            if self.newTemp and self.logdelta!=0.:
-                print("self.newTemp and self.logdelta!=0.")
-                # Guess a value of Usp from the interpolation with the log(Delta)
-                # Delta = 1 - Usp/usp_max. Supposedly the relation with the temperature is log(Delta) \propto 1/T
-                usp_guess = usp_max_h * (1. - np.exp(self.logdelta)).real - 1e-5
 
-                # Set the real initial guess value lower than usp_guess so it is on the other side of the functions crossing.
-                # If Usp is too near the real answer, it can be on the same side as usp_max and brentq does not find the roots.
-                usp_min = usp_guess - self.delta_out_1
-                # Of course, if that makes it so usp_min becomes negative, we put it back to its inital value.
-
-                if usp_min < 0.:
-                    usp_min = 0.
-
-            elif self.newTemp :
+            if self.newTemp > 0.: # 1 ---
                 logging.debug("In calc_usp: newTemp")
-                usp_guess = usp_max_h - gamma*(self.usp_max-self.usp_prev_T)
+                usp_guess = usp_max_h - gamma * (self.usp_max - self.usp_prev_T)
                 usp_min = usp_guess - self.delta_out_1
 
                 if not self.delta_p:
@@ -200,14 +224,14 @@ class TpscPlus:
                     usp_guess = usp_max_h - gamma * (self.usp_prev_T - self.usp_max)
                     usp_min = usp_guess + self.delta_out_1
 
-            elif self.delta_out_1 != 0.:
+            elif self.delta_out_1 != 0.: # 2 ---
                 logging.debug("In calc_usp: delta_out_1 != 0")
                 usp_guess = usp_max_h - gamma * (self.usp_max - self.usp_prev_T)
                 usp_min = usp_guess * gamma
                 if not self.delta_p: # If Delta is smaller than 0, the above equation would make the new guess for Usp go even beyond usp_max again, so we changed the sign.
                     usp_guess = usp_max_h - gamma*(self.usp_prev_T - self.usp_max)
                     usp_min = usp_guess + self.delta_out_1
-            else :
+            else : # 3 ---
                 usp_guess = usp_max_h*gamma # Arbitrary chosen to remove Usp*0.1 so it is proportionnal and smaller.
 
             # Making sure that usp_min is on the "right" side of the functions' crossing for brentq,
@@ -231,7 +255,7 @@ class TpscPlus:
             # -- 3rd option : Set Usp with a normally valid value, but not the most recommended one.
             else :
                 print(f"Usp found with a percentage {gamma:.2f} of usp_max" )
-                self.newTemp = self.newTemp + 5
+                self.newTemp = self.newTemp + 5 # XXX Why do we add 5?
                 self.Usp = usp_max_h*gamma
 
         #  ---- Setting the new values for the next iteration ----

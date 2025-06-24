@@ -193,3 +193,8 @@ class Mesh2D:
         # We find the index for the k-point which has the minimum distance
         # squared from (kx, ky)
         return dist2_arr.argmin()
+
+
+    @property
+    def shape(self):
+        return (len(self.iwn_f), self.nk1, self.nk1)
