@@ -39,7 +39,7 @@ class TpscPlus:
         """
         TODO Documentation
         """
-        logging.basicConfig(level=logging.INFO)
+        logging.basicConfig(level=logging.DEBUG)
         logging.info("Start of TPSC+ calculations.")
 
         # First do a regular TPSC procedure.
@@ -47,12 +47,18 @@ class TpscPlus:
 
         # TODO Comment this
         self.usp_max = usp_max
-        self.prev_usp = 0
+        self.prev_usp = 0. # XXX THAT DOES THIS DO
+        self.usp_prev_T = 0.
         delta_ip1 = 1. - 0.5 * self.tpsc_obj.Usp * self.chi2
+
+        # XXX This makes no sense
+        self.newTemp = False
+        self.logdelta = 0.
 
         # Do the TPSC+ loop.
         logging.info("Start of TPSC+ self-consistent loop.")
         for i in range(iter_max):
+
             if i > 0 and alpha > 0:
                 self.self_energy = (1 - alpha) * self.tpsc_obj.self_energy + (alpha) * self.self_energy
 
@@ -88,6 +94,8 @@ class TpscPlus:
             norm_inf = np.max(np.abs((delta_ip1 - delta_i) / delta_i)) / (1 - alpha)
 
             norm_conditions = (norm < msd2precision) or (norm_inf < msdInfprecision)
+
+            logging.debug(f"Iteration #{i}, {norm}, {norm_inf}")
 
             if norm_conditions:
                 if (self.delta_p == True) and (self.prev_usp == 0) and (i > iter_min):
@@ -132,6 +140,7 @@ class TpscPlus:
         # ---- Setting the initial values ----
         usp_min = 0.
         usp_max_h = 2. / np.amax(self.chi2).real - 1e-7  # to escape 0-division -- Warning : smaller than this can create other problems in the calculations such as the calculation of Mu2.
+        # print("usp_max_h", usp_max_h)
         if self.usp_max == 0. :
             self.usp_max = usp_max_h - 1e-5
 
@@ -154,6 +163,7 @@ class TpscPlus:
                               disp=True)
 
         else:
+            logging.debug(f"prev_usp = { self.prev_usp}")
             self.guess_Usp_flag = True
             self.prev_usp = 5
 
@@ -164,8 +174,8 @@ class TpscPlus:
             #       3. Third one is from the previous iteration :
             #           It uses the values of Usp and usp_max to guess usp_min
             #       4. Fourth one is when none of the above is the case
+            gamma = 0.8 # gamma can be between 0 and 1.
             if self.newTemp and self.logdelta!=0.:
-                gamma = 0.8 # gamma can be between 0 and 1.
                 print("self.newTemp and self.logdelta!=0.")
                 # Guess a value of Usp from the interpolation with the log(Delta)
                 # Delta = 1 - Usp/usp_max. Supposedly the relation with the temperature is log(Delta) \propto 1/T
@@ -178,51 +188,51 @@ class TpscPlus:
 
                 if usp_min < 0.:
                     usp_min = 0.
-                elif self.newTemp :
-                    logging.debug("In calc_usp: newTemp")
-                    usp_guess = usp_max_h - gamma*(self.usp_max-self.Usp_prevT)
-                    usp_min = usp_guess - self.delta_out_1
 
-                    if not self.delta_p:
-                        # If self.delta_p is Fasle, that means that Usp is larger than usp_max. Which is not good : Chisp would then be negative.
-                        # We give a new guess to Usp so it is smaller than usp_max hopefully
-                        usp_guess = usp_max_h - gamma * (self.Usp_prevT - self.usp_max)
-                        usp_min = usp_guess + self.delta_out_1
+            elif self.newTemp :
+                logging.debug("In calc_usp: newTemp")
+                usp_guess = usp_max_h - gamma*(self.usp_max-self.usp_prev_T)
+                usp_min = usp_guess - self.delta_out_1
 
-                elif self.delta_out_1!=0. : # XXX WILL NEVER ENTER HERE (newTemp has already been checked to be True, see elif above)
-                    print("self.delta_out_1!=0.")
-                    usp_guess = usp_max_h - self.gamma*(self.usp_max-self.Usp_prevT)
-                    usp_min = usp_guess*self.gamma
-                    if not self.delta_p: # If Delta is smaller than 0, the above equation would make the new guess for Usp go even beyond usp_max again, so we changed the sign.
-                        usp_guess = usp_max_h - self.gamma*(self.Usp_prevT-self.usp_max)
-                        usp_min = usp_guess + self.delta_out_1
-                else :
-                    usp_guess = usp_max_h*self.gamma # Arbitrary chosen to remove Usp*0.1 so it is proportionnal and smaller.
+                if not self.delta_p:
+                    # If self.delta_p is Fasle, that means that Usp is larger than usp_max. Which is not good : Chisp would then be negative.
+                    # We give a new guess to Usp so it is smaller than usp_max hopefully
+                    usp_guess = usp_max_h - gamma * (self.usp_prev_T - self.usp_max)
+                    usp_min = usp_guess + self.delta_out_1
 
-                # Making sure that usp_min is on the "right" side of the functions' crossing for brentq,
-                # If not, we reinitialize usp_min to 0.
-                if (self.calc_sum_chisp(usp_min) - self.calc_sum_rule_chisp(usp_min)) > 0:
-                    usp_min = 0.
-                if usp_max_h < usp_min:
-                    usp_min = 0.
+            elif self.delta_out_1 != 0.:
+                logging.debug("In calc_usp: delta_out_1 != 0")
+                usp_guess = usp_max_h - gamma * (self.usp_max - self.usp_prev_T)
+                usp_min = usp_guess * gamma
+                if not self.delta_p: # If Delta is smaller than 0, the above equation would make the new guess for Usp go even beyond usp_max again, so we changed the sign.
+                    usp_guess = usp_max_h - gamma*(self.usp_prev_T - self.usp_max)
+                    usp_min = usp_guess + self.delta_out_1
+            else :
+                usp_guess = usp_max_h*gamma # Arbitrary chosen to remove Usp*0.1 so it is proportionnal and smaller.
 
-                # ------------- Setting the value of Usp -------------------
-                # -- 1st option : Retry with the new values of usp_min
-                f_usp_min = self.calc_sum_chisp(usp_min) - self.calc_sum_rule_chisp(usp_min)
-                f_usp_max = self.calc_sum_chisp(usp_max_h) - self.calc_sum_rule_chisp(usp_max_h)
-                if f_usp_min * f_usp_max < 0:
-                    print("Usp found with Brentq with guessed usp_min")
-                    self.Usp = brentq(lambda u: self.calc_sum_chisp(u)-self.calcSumRuleChisp(u), usp_min, usp_max_h, disp=True)
+            # Making sure that usp_min is on the "right" side of the functions' crossing for brentq,
+            # If not, we reinitialize usp_min to 0.
+            if (self.mesh.trace('B', self.calc_chisp(usp_min)).real - self.calc_sum_rule_chisp(usp_min)) > 0:
+                usp_min = 0.
+            if usp_max_h < usp_min:
+                usp_min = 0.
 
-                # -- 2nd option : Set Usp from an eduacted guess
-                elif usp_guess > 0 and usp_guess < usp_max_h :
-                    print("Usp found with Usp guess")
-                    self.Usp = usp_guess
-                # -- 3rd option : Set Usp with a normally valid value, but not the most recommended one.
-                else :
-                    print(f"Usp found with a percentage {gamma:.2f} of usp_max" )
-                    self.newTemp = self.newTemp + 5
-                    self.Usp = usp_max_h*gamma
+            # ------------- Setting the value of Usp -------------------
+            # -- 1st option : Retry with the new values of usp_min
+            f_usp_min = self.mesh.trace('B', self.calc_chisp(usp_min)).real - self.calc_sum_rule_chisp(usp_min)
+            f_usp_max = self.mesh.trace('B', self.calc_chisp(usp_max_h)).real - self.calc_sum_rule_chisp(usp_max_h)
+            if f_usp_min * f_usp_max < 0:
+                print("Usp found with Brentq with guessed usp_min")
+                self.Usp = brentq(lambda u: self.mesh.trace('B', self.calc_chisp(u)).real-self.calcSumRuleChisp(u), usp_min, usp_max_h, disp=True)
+            # -- 2nd option : Set Usp from an eduacted guess
+            elif usp_guess > 0 and usp_guess < usp_max_h :
+                print("Usp found with Usp guess")
+                self.Usp = usp_guess
+            # -- 3rd option : Set Usp with a normally valid value, but not the most recommended one.
+            else :
+                print(f"Usp found with a percentage {gamma:.2f} of usp_max" )
+                self.newTemp = self.newTemp + 5
+                self.Usp = usp_max_h*gamma
 
         #  ---- Setting the new values for the next iteration ----
         self.delta_out = 1. - 0.5 * self.Usp * self.chi2 # To use for the convergence check.
