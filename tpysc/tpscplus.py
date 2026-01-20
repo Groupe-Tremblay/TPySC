@@ -72,7 +72,7 @@ class TpscPlus:
             self.calc_chi2()
 
             # Calculate Usp and Uch from the TPSC ansatz.
-            self.calc_usp()
+            self.tpsc_obj.calc_usp()
 
         self.tpsc_obj.calc_uch()
 
@@ -170,7 +170,76 @@ class TpscPlus:
         return self.main_results
 
 
-    def calc_usp(self):
+    def calc_usp(self, gamma: float = 0.8):
+        """
+        Docstring for calc_usp_new
+
+        :param self: Description
+        """
+        usp_min = 1e-6
+        small_num_for_usp_max = 1e-9
+
+        # Relevant parameters TODO use as function params
+        U = self.tpsc_obj.U
+        n = self.n
+
+        # Compute the trace of chi2 squared.
+        trace_chi2_sq = self.mesh.trace('B', self.chi2 * np.conj(self.chi2)) # TODO Add the calculation of the trace(chi2*chi2)
+
+        usp_max_abs = U / (1 + U * trace_chi2_sq / (n*n))
+        usp_crit = 2 / np.amax(self.chi2).real
+        # XXX Yury assigns usp crit to a member variable?
+
+        # Find the upper bound for Usp that best suits the situation
+        if usp_max_abs < usp_crit: # Typically away from the critical regime
+            if self.mesh.trace('B', self.calc_chisp(usp_max_abs)).real - self.calc_sum_rule_chisp(usp_max_abs) > 0:
+                usp_max_h = usp_max_abs
+            else:
+                usp_max_h = usp_crit - small_num_for_usp_max
+        else: # In the critical regime
+            usp_max_h = usp_crit - small_num_for_usp_max
+
+        # Yury added a while loop to have an upper bound on the positive side of the function's crossing for brentq.
+        # TODO Check if this is redundant with the previous if statement
+        temp_usp_max_h_rule = self.mesh.trace('B', self.calc_chisp(usp_max_h)).real - self.calc_sum_rule_chisp(usp_max_h)
+        usp_braketed = True
+        while temp_usp_max_h_rule < 0:
+            small_num_for_usp_max /= 10
+            if small_num_for_usp_max < 1e-12: # Condition for max iteration
+                usp_braketed = False
+                break
+            usp_max_h = usp_crit - small_num_for_usp_max
+            temp_usp_max_h_rule = self.mesh.trace('B', self.calc_chisp(usp_max_h)).real - self.calc_sum_rule_chisp(usp_max_h)
+
+        # Yury added a while loop to select Uspmin on the "right" side of the functions' crossing for brentq.
+        while self.mesh.trace('B', self.calc_chisp(usp_min)).real - self.calc_sum_rule_chisp(usp_min) > 0:
+             usp_min = gamma * usp_min
+             if usp_min < 0.05 * usp_max_h:
+                usp_min = 1e-6
+                break
+
+        # This should not happen
+        if usp_max_h < usp_min:
+            usp_min = 1e-6
+
+        if usp_braketed and self.mesh.trace('B', self.calc_chisp(usp_min)).real - self.calc_sum_rule_chisp(usp_min) < 0:
+            self.Usp = brentq(lambda m: self.mesh.trace('B', self.calc_chisp(m)).real - self.calc_sum_rule_chisp(m), usp_min, usp_max_h, disp=True)
+        else:
+            usp_braketed = False
+            self.Usp = usp_max_h * gamma
+
+        # Setting new values for next iteration
+        self.delta_out = 1 - 0.5 * self.Usp * self.chi2
+        self.delta_out_1 = 1 - self.Usp / usp_crit
+
+        if self.delta_out_1 > 0:
+            self.delta_p = True
+        else:
+            self.delta_p = False
+
+
+
+    def calc_usp_old(self):
         """
         Function to compute Usp from chi0 and the sum rule.
         """
@@ -178,7 +247,7 @@ class TpscPlus:
         # ---- Setting the initial values ----
         usp_min = 0.
         usp_max_h = 2. / np.amax(self.chi2).real - 1e-7  # to escape 0-division -- Warning : smaller than this can create other problems in the calculations such as the calculation of Mu2.
-        # print("usp_max_h", usp_max_h)
+
         if self.usp_max == 0. :
             self.usp_max = usp_max_h - 1e-5
 
@@ -278,7 +347,7 @@ class TpscPlus:
         g2_tau_r, g2_tau_mr = transform_g_to_direct_space(self.mesh, self.g2)
         V = self.tpsc_obj.g1_tau_r * g2_tau_mr[::-1, :] + g2_tau_r * self.tpsc_obj.g1_tau_mr[::-1, :]
 
-        # Fourier transform
+        # Fourier transform (r, tau) -> (k, iwn)
         V = self.mesh.r_to_k(V)
         self.chi2 = self.mesh.tau_to_wn('B', V)
 
@@ -359,4 +428,9 @@ class TpscPlus:
 
 
     def calc_chisp(self, usp: float):
-        return self.tpsc_obj.calc_chisp(usp)
+        """
+        Computes chisp(q) = chi2(q)/(1 - Usp/2 * chi2(q)).
+        """
+        return  self.chi2 / (1 - 0.5 * usp * self.chi2)
+
+    # TODO Implement the calculation of chich
