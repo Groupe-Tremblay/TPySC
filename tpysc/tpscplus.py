@@ -46,8 +46,8 @@ class TpscPlus:
         logging.info("Start of TPSC+ calculations.")
 
         self.usp_max = usp_max
-        self.prev_usp = 0. # XXX THAT DOES THIS DO
-        self.usp_prev_T = usp_prev_T
+        self.prev_usp = 0. # XXX This seems deprecated
+        self.usp_prev_T = usp_prev_T # This also seems deprecated
 
         # First do a regular TPSC procedure.
         # Calculate the Green function G1 at the first level of approximation of TPSC.
@@ -60,8 +60,8 @@ class TpscPlus:
             # Set the self-energy
             if np.shape(self_energy)[0] < len(self.mesh.iwn_f): # Check if len(selfE) < len(iwn)
                 diffshape = len(self.mesh.iwn_f) - np.shape(self_energy)[0] # If so, gets the difference in lengths
-                self.self_energy = np.zeros(self.mesh.shape, dtype=complex) # Empty array to fill
-                self.self_energy[diffshape//2:-diffshape//2,:] = self_energy
+                self.self_energy = np.zeros(self.mesh.shape, dtype=complex) # Create empty array to fill
+                self.self_energy[diffshape//2:-diffshape//2,:] = self_energy # Fill it with known values (approximative)
 
             # Compute the new G2
             dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
@@ -135,6 +135,7 @@ class TpscPlus:
 
             logging.debug(f"Iteration #{i}, {norm}, {norm_inf}")
 
+            # TODO Use new and improve convergence condition
             if norm_conditions:
                 if (self.delta_p == True) and (self.prev_usp == 0) and (i > iter_min):
                     self.converged = True
@@ -184,11 +185,11 @@ class TpscPlus:
         n = self.n
 
         # Compute the trace of chi2 squared.
-        trace_chi2_sq = self.mesh.trace('B', self.chi2 * np.conj(self.chi2)) # TODO Add the calculation of the trace(chi2*chi2)
+        trace_chi2_sq = self.mesh.trace('B', self.chi2 * np.conj(self.chi2))
 
+        # Get the two possible upper bounds for usp
         usp_max_abs = U / (1 + U * trace_chi2_sq / (n*n))
         usp_crit = 2 / np.amax(self.chi2).real
-        # XXX Yury assigns usp crit to a member variable?
 
         # Find the upper bound for Usp that best suits the situation
         if usp_max_abs < usp_crit: # Typically away from the critical regime
