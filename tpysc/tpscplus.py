@@ -173,7 +173,7 @@ class TpscPlus:
 
     def calc_usp(self, gamma: float = 0.8):
         """
-        Docstring for calc_usp_new
+        Docstring for calc_usp
 
         :param self: Description
         """
@@ -237,7 +237,6 @@ class TpscPlus:
             self.delta_p = True
         else:
             self.delta_p = False
-
 
 
     def calc_usp_old(self):
@@ -434,4 +433,9 @@ class TpscPlus:
         """
         return  self.chi2 / (1 - 0.5 * usp * self.chi2)
 
-    # TODO Implement the calculation of chich
+
+    def calc_chich(self, uch: float):
+        """
+        Computes chisp(q) = chi2(q)/(1 - Usp/2 * chi2(q)).
+        """
+        return self.chi2 / (1 + 0.5 * uch * self.chi2)
