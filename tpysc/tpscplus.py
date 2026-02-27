@@ -36,7 +36,6 @@ class TpscPlus:
               msd2precision: float = 1e-5,
               msdInfprecision: float = 1e-3,
               iter_max: int = 1_000,
-              iter_min: int = 30,
               usp_max: float = 0.,
               usp_prev_T: float = 0.,
               self_energy: np.ndarray = None,
@@ -89,17 +88,12 @@ class TpscPlus:
         # Perform the second level approx as usual.
         self.tpsc_obj.calc_second_level_approx()
 
-
-        # TODO Comment this
-        delta_ip1 = 1. - 0.5 * self.tpsc_obj.Usp * self.chi2
-
         # XXX This makes no sense
         self.newTemp = new_temp
 
         # Do the TPSC+ loop.
         logging.info("Start of TPSC+ self-consistent loop.")
         for i in range(iter_max):
-            print(i) # CONVERGERS ON ITERATION 0 (PROBLEM)
 
             if i > 0 and alpha > 0:
                 self.self_energy = (1 - alpha) * self.tpsc_obj.self_energy + (alpha) * self.self_energy
