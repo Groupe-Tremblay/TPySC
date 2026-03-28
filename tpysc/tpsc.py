@@ -161,7 +161,7 @@ class Tpsc:
         """
         Computes chisp(q) = chi1(q)/(1 - Usp/2 * chi1(q)).
         """
-        return  self.chi1/ (1 - 0.5 * usp * self.chi1)
+        return  self.chi1 / (1 - 0.5 * usp * self.chi1)
 
 
     def calc_chich(self, uch):
@@ -187,12 +187,17 @@ class Tpsc:
             return self.Usp / (4 * self.U) * (2 - self.n) * (2 - self.n) - 1 + self.n
 
 
-    def calc_sum_rule_chisp(self, Usp):
+    def calc_sum_rule_chisp(self, Usp: float) -> float:
         """
         Calculate the spin susceptibility sum rule for a specific Usp and U.
-        The TPSC ansatz we use here satisfies the particle-hole symmetry with:
-        n<1: Usp = U<n_up n_dn>/(<n_up><n_dn>)
-        n>1: Usp = U<(1-n_up)(1-n_dn)>/(<(1-n_up)><(1-n_dn)>)
+
+        The TPSC ansatz satisfies particle-hole symmetry according to:
+
+        * For n < 1: :math:`U_{sp} = U \\frac{\\langle n_{\\uparrow} n_{\\downarrow} \\rangle}{\\langle n_{\\uparrow} \\rangle \\langle n_{\\downarrow} \\rangle}`
+        * For n > 1: :math:`U_{sp} = U \\frac{\\langle (1-n_{\\uparrow})(1-n_{\\downarrow}) \\rangle}{\\langle (1-n_{\\uparrow}) \\rangle \\langle (1-n_{\\downarrow}) \\rangle}`
+
+        :param Usp: The irreducible spin vertex.
+        :type Usp: float
 
         :meta private:
         """
@@ -202,12 +207,17 @@ class Tpsc:
             return self.n - Usp / (2 * self.U) * (2 - self.n) * (2 - self.n) + 2 - 2 * self.n
 
 
-    def calc_sum_rule_chich(self, Usp):
+    def calc_sum_rule_chich(self, Usp: float) -> float:
         """
         Calculate the charge susceptibility sum rule for a specific Usp and U.
-        The TPSC ansatz we use here satisfies the particle-hole symmetry with:
-        n<1: Usp = U<n_up n_dn>/(<n_up><n_dn>)
-        n>1: Usp = U<(1-n_up)(1-n_dn)>/(<(1-n_up)><(1-n_dn)>)
+
+        The TPSC ansatz satisfies particle-hole symmetry according to:
+
+        * For n < 1: :math:`U_{sp} = U \\frac{\\langle n_{\\uparrow} n_{\\downarrow} \\rangle}{\\langle n_{\\uparrow} \\rangle \\langle n_{\\downarrow} \\rangle}`
+        * For n > 1: :math:`U_{sp} = U \\frac{\\langle (1-n_{\\uparrow})(1-n_{\\downarrow}) \\rangle}{\\langle (1-n_{\\uparrow}) \\rangle \\langle (1-n_{\\downarrow}) \\rangle}`
+
+        :param Usp: The irreducible spin vertex.
+        :type Usp: float
 
         :meta private:
         """

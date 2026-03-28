@@ -39,17 +39,12 @@ class TpscPlus:
               usp_max: float = 0.,
               usp_prev_T: float = 0.,
               self_energy: np.ndarray = None,
-              new_temp: float = 0,
               ) -> None:
         """
         TODO Documentation
         """
         logging.basicConfig(level=logging.DEBUG)
         logging.info("Start of TPSC+ calculations.")
-
-        self.usp_max = usp_max
-        self.prev_usp = 0. # XXX This seems deprecated
-        self.usp_prev_T = usp_prev_T # XXX This also seems deprecated
 
         # First do a regular TPSC procedure.
         # Calculate the Green function G1 at the first level of approximation of TPSC.
@@ -87,9 +82,6 @@ class TpscPlus:
 
         # Perform the second level approx as usual.
         self.tpsc_obj.calc_second_level_approx()
-
-        # XXX This makes no sense
-        self.newTemp = new_temp
 
         # Do the TPSC+ loop.
         logging.info("Start of TPSC+ self-consistent loop.")
@@ -134,17 +126,9 @@ class TpscPlus:
             # norm_conditions = (norm < msd2precision) or (norm_inf < msdInfprecision)
             conditions = (np.abs(ucrit_difference) < 1e-10) or (np.abs(delta_difference) < 1e-10) # TODO Make this adjustable.
 
-            # logging.debug(f"Iteration #{i}, {norm}, {norm_inf}")
-            # TODO Use new and improved convergence condition
-            # if norm_conditions:)
-            #     if (self.delta_p == True) and (self.prev_usp == 0) and (i > iter_min:
-            #         self.converged = True
-            #         break
             if conditions and self.delta > 0:
                 self.converged = True
                 break
-
-            # delta_ip1 = delta_i
 
         if self.converged:
             logging.info("The TPSC+ calculation has converged after {} iterations.".format(i+1))
@@ -240,13 +224,6 @@ class TpscPlus:
         self.delta = 1 - self.Usp / usp_crit
 
 
-
-        # if self.delta > 0:
-        #     self.delta_p = True
-        # else:
-        #     self.delta_p = False
-
-
     def calc_chi2(self):
         """
         TODO Documentation
@@ -331,7 +308,14 @@ class TpscPlus:
 
 
     def calc_sum_rule_chisp(self, usp: float):
+        """
+            TODO Documentation
+        """
         return self.tpsc_obj.calc_sum_rule_chisp(usp)
 
+
     def calc_chisp(self, usp: float):
+        """
+            TODO Documentation
+        """
         return self.tpsc_obj.calc_chisp(usp)

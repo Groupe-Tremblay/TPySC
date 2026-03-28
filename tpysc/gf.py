@@ -6,7 +6,7 @@ import numpy as np
 
 def calcGiwnk(mesh: Mesh2D, z):
     """
-    Calculate a general Green's function in the form 1/(iwn - z).
+    Calculate a general Matsubara Green's function in the form 1/(iwn - z).
     """
     return 1 / (mesh.iwn_f[:, None, None] - z)
 
