@@ -28,3 +28,9 @@ def transform_g_to_direct_space(mesh: Mesh2D, greens_function) -> tuple:
     g_tau_r = mesh.k_to_r(g)
     g_tau_mr = mesh.k_to_mr(g)
     return g_tau_r, g_tau_mr
+
+
+def calc_spectral_weight(mesh: Mesh2D, greens_function: np.ndarray) -> np.ndarray:
+    g = mesh.extrapolate_zero_freq(greens_function)
+    # return -1. / np.pi * ( poly(0+1j*eta).imag )
+    return -( 1. / np.pi ) * ( g.imag )

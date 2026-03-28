@@ -1,5 +1,6 @@
 import numpy as np
 import sparse_ir
+from scipy.interpolate import BarycentricInterpolator
 
 """
 Date: June 22, 2023
@@ -9,7 +10,6 @@ class Mesh2D:
     Holding class for k-mesh and sparsely sampled imaginary time 'tau' / Matsubara frequency 'iw_n' grids.
     Additionally it defines the Fourier transform routines 'r <-> k'  and 'tau <-> l <-> wn'.
     This is valid for the 2D case
-    Requires an input dispersion
     Credit for the basics: Niklas Witt
     https://spm-lab.github.io/sparse-ir-tutorial/src/TPSC_py.html
     """
@@ -64,7 +64,7 @@ class Mesh2D:
         return obj_tau
 
 
-    def k_to_r(self,obj_k):
+    def k_to_r(self, obj_k):
         """ Fourier transform from k-space to real space """
         obj_r = np.fft.ifftn(obj_k,axes=(1,2))
         return obj_r
@@ -123,25 +123,25 @@ class Mesh2D:
         return np.squeeze(calculated_obj_wn)
 
 
-    def _lagrange_extrapolation_zero_freq_nth_order(self, xs, ys):
-        """
-        Routine that evaluates the Lagrange polynomial passing through the points
-        xs=[x1, x2, ..., xn+1], ys=[y1, y2, ..., yn+1]. The expected shape of the arguments is
-        xs: 1D array of frequencies
-        ys: array of datapoints to extrapolate to 0 frequency. If ys is multidimensional,
-            it is assumed that the first dimension is the frequency dependence
-        """
-        val = np.zeros_like(ys[0,...])
-        for i in range(ys.shape[0]):
-            prod_temp=1
-            for j in range(ys.shape[0]):
-                if j != i:
-                    prod_temp *= -xs[j] / (xs[i] - xs[j])
-            val += prod_temp * ys[i,...]
-        return val
+    # def _lagrange_extrapolation_zero_freq_nth_order(self, xs, ys):
+    #     """
+    #     Routine that evaluates the Lagrange polynomial passing through the points
+    #     xs=[x1, x2, ..., xn+1], ys=[y1, y2, ..., yn+1]. The expected shape of the arguments is
+    #     xs: 1D array of frequencies
+    #     ys: array of datapoints to extrapolate to 0 frequency. If ys is multidimensional,
+    #         it is assumed that the first dimension is the frequency dependence
+    #     """
+    #     val = np.zeros_like(ys[0,...])
+    #     for i in range(ys.shape[0]):
+    #         prod_temp=1
+    #         for j in range(ys.shape[0]):
+    #             if j != i:
+    #                 prod_temp *= -xs[j] / (xs[i] - xs[j])
+    #         val += prod_temp * ys[i,...]
+    #     return val
 
 
-    def extrapolate_zero_freq(self, obj_wn, n_freqs):
+    def extrapolate_zero_freq(self, obj_wn, n_freqs: int=4):
         """
         Routine that uses a Lagrange extrapolation of the n_freqs first
         Matsubara frequencies to extrapolate a fermionic correlation
@@ -154,10 +154,12 @@ class Mesh2D:
         evaluated_data = self.get_specific_wn('F', obj_wn, indices)
 
         # We use our routine to evaluate the zero-frequency correlation function
+        interpolation_object = BarycentricInterpolator(frequencies_interpolation, evaluated_data, axis=0)
+        return interpolation_object(0+0.001j)
         return self._lagrange_extrapolation_zero_freq_nth_order(frequencies_interpolation, evaluated_data)
 
 
-    def trace(self, statistic: str, obj,  tau_value: float = 0):
+    def trace(self, statistic: str, obj,  tau_value: float = 0) -> float:
         """
             TODO Documentation
         """
@@ -195,6 +197,15 @@ class Mesh2D:
         return dist2_arr.argmin()
 
 
+    def save_k_grid_function(file_name: str, obj) -> None:
+        """
+
+        :param obj:
+
+        """
+        pass
+
+
     @property
-    def shape(self):
+    def shape(self) -> float:
         return (len(self.iwn_f), self.nk1, self.nk1)
