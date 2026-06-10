@@ -123,40 +123,34 @@ class Mesh2D:
         return np.squeeze(calculated_obj_wn)
 
 
-    # def _lagrange_extrapolation_zero_freq_nth_order(self, xs, ys):
-    #     """
-    #     Routine that evaluates the Lagrange polynomial passing through the points
-    #     xs=[x1, x2, ..., xn+1], ys=[y1, y2, ..., yn+1]. The expected shape of the arguments is
-    #     xs: 1D array of frequencies
-    #     ys: array of datapoints to extrapolate to 0 frequency. If ys is multidimensional,
-    #         it is assumed that the first dimension is the frequency dependence
-    #     """
-    #     val = np.zeros_like(ys[0,...])
-    #     for i in range(ys.shape[0]):
-    #         prod_temp=1
-    #         for j in range(ys.shape[0]):
-    #             if j != i:
-    #                 prod_temp *= -xs[j] / (xs[i] - xs[j])
-    #         val += prod_temp * ys[i,...]
-    #     return val
-
-
-    def extrapolate_zero_freq(self, obj_wn, n_freqs: int=4):
+    def extrapolate_fermionic_zero_freq(self, obj_wn, n_freqs: int=4, eta: float=0.001):
         """
-        Routine that uses a Lagrange extrapolation of the n_freqs first
-        Matsubara frequencies to extrapolate a fermionic correlation
-        function to wn=0.
+        Extrapolate a fermionic function to zero frequency using barycentric Lagrange interpolation
+        for the first n_freqs Matsubara frequencies.
+
+        :param obj_wn: The fermionic function object to extrapolate.
+        :type obj_wn: object
+        :param n_freqs: Number of Matsubara frequencies to use for interpolation.
+                        Defaults to 4.
+        :type n_freqs: int
+        :param eta: Small imaginary frequency offset for extrapolation (typically used to avoid
+                    exact zero). Defaults to 0.001.
+        :type eta: float
+        :return: The extrapolated function value at frequency i*eta.
+        :rtype: float or array-like
+
+        .. note::
+        The small offset eta helps avoid numerical issues
+        at exactly zero frequency.
         """
         # We evaluate the first few frequencies
         indices = np.arange(n_freqs, dtype='int')
-        frequencies_interpolation = (2*indices+1)*np.pi*self.T
-
+        freq_interp = (2*indices+1)*np.pi*self.T
         evaluated_data = self.get_specific_wn('F', obj_wn, indices)
 
         # We use our routine to evaluate the zero-frequency correlation function
-        interpolation_object = BarycentricInterpolator(frequencies_interpolation, evaluated_data, axis=0)
-        return interpolation_object(0+0.001j)
-        return self._lagrange_extrapolation_zero_freq_nth_order(frequencies_interpolation, evaluated_data)
+        interpolation_object = BarycentricInterpolator(freq_interp, evaluated_data, axis=0)
+        return interpolation_object(eta)
 
 
     def trace(self, statistic: str, obj,  tau_value: float = 0) -> float:
