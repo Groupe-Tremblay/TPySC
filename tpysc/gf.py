@@ -34,7 +34,7 @@ def calc_spectral_weight_omega_0(mesh: Mesh2D, greens_function: np.ndarray, conv
     """
         TODO
     """
-    g = mesh.extrapolate_zero_freq(greens_function)
+    g = mesh.extrapolate_fermionic_zero_freq(greens_function)
     if convention == 0:
         C = 1 / np.pi
     else:
