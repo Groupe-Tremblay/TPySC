@@ -380,34 +380,3 @@ class Tpsc:
         }
         with open(filename, 'w') as outfile:
            outfile.write(json.dumps(out_results, indent=4))
-
-
-    def plotSelfEnergyVsWn(self, coordinates, Wn_range, show=True, ax=None):
-        """
-        Evaluate and plot the self-energy as a function of Wn for a specific k-point.
-
-        :param coordinates: The k-point to evaluate the self-energy
-        :type coordinates: list
-        :param Wn_range: x-axis range
-        :type Wn_range: list
-        :param show: Whether or not showing the grah
-        :type show: bool, optional
-        :param ax: A matplotlib axis to plot the grah (default, create a graph)
-        :type ax: optional
-        :return: A matplotlib axis objet containing the graph
-        """
-        inds = np.arange(Wn_range[0], Wn_range[1]+1, 1)
-        ind_kpoint_node = self.mesh.get_ind_kpt(coordinates[0], coordinates[1])
-        vals_s2 = self.mesh.get_specific_wn("F", self.self_energy[:,ind_kpoint_node], inds)
-        if ax is None:
-            fig,ax = plt.subplots()
-        ax.set_title("Self-energy node")
-        ax.plot(inds, vals_s2.real, 'b', label="Re")
-        ax.plot(inds, vals_s2.imag, 'r', label="Im")
-        ax.set_xlabel(r"$n$")
-        ax.set_ylabel(r"$\Sigma$")
-        ax.grid()
-        ax.legend(loc='best')
-        if show:
-            plt.show()
-        return ax
