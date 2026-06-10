@@ -1,10 +1,9 @@
 import numpy as np
 import sparse_ir
 from scipy.interpolate import BarycentricInterpolator
+import h5py
 
-"""
-Date: June 22, 2023
-"""
+
 class Mesh2D:
     """
     Holding class for k-mesh and sparsely sampled imaginary time 'tau' / Matsubara frequency 'iw_n' grids.
@@ -36,7 +35,7 @@ class Mesh2D:
         self.iw0_b = np.where(self.IR_basis_set.wn_b == 0)[0][0]
 
         ### Generate a frequency-momentum grid for iw_n.
-        self.iwn_f = 1j * self.IR_basis_set.wn_f * np.pi * self.T
+        self.iwn_f = 1j * self.IR_basis_set.wn_f * np.pi * self.T # TODO This is redundant
 
 
     def smpl_obj(self, statistics):
@@ -191,15 +190,43 @@ class Mesh2D:
         return dist2_arr.argmin()
 
 
-    def save_k_grid_function(file_name: str, obj) -> None:
-        """
+    def save_k_grid_function(self, target_file: str, data_label: str, obj: np.ndarray) -> None:
+         """
+        Save a k-space grid array to an HDF5 file.
 
-        :param obj:
+        For complex-valued arrays, the real and imaginary parts are stored
+        separately in named datasets within a group for easier visualization.
+        Real-valued arrays are stored directly as a single dataset.
 
+        :param target_file: Path to the HDF5 file where data will be saved.
+        :type target_file: str
+        :param data_label: Key or group name for the dataset(s) in the HDF5 file.
+        :type data_label: str
+        :param obj: The k-space grid array to save. Should be a 2D array.
+        :type obj: np.ndarray
+        :return: None
+        :rtype: None
+
+        .. note::
+            This function currently saves only the subset obj[:(self.nk1//2), :(self.nk1//2)].
+            This behavior is flagged for optimization in the source code.
+
+        .. todo::
+            Verify that the input is truly a grid structure before saving.
+            Optimize the slicing operation for large arrays.
         """
-        pass
+        # TODO Check that is is really a grid
+
+        save_obj = obj[:(self.nk1//2),:(self.nk1//2)] # TODO This can be optimized
+        with h5py.File(target_file, "w") as f:
+            if np.iscomplexobj(obj): # Seperate real and complex part for ease of vizualisation.
+                grp = f.create_group(data_label)
+                grp.create_dataset("real", data=save_obj.real)
+                grp.create_dataset("imag", data=save_obj.imag)
+            else:
+                f.create_dataset(data_label, data=save_obj)
 
 
     @property
-    def shape(self) -> float:
+    def shape(self) -> float: # TODO This is not very rigourous
         return (len(self.iwn_f), self.nk1, self.nk1)
