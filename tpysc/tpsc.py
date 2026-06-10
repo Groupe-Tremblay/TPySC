@@ -1,12 +1,13 @@
-from .gf import GF
+from .gf import calcGiwnk, calcNfromG, transform_g_to_direct_space
 from .mesh import Mesh2D
 import matplotlib.pyplot as plt
 import json
 import numpy as np
+import logging
 
 from scipy.optimize import brentq
 
-class TPSC:
+class Tpsc:
     """
     Class to set up a TPSC calculation.
     Calculation is carried using the ``run()`` method.
@@ -35,8 +36,8 @@ class TPSC:
     def __init__(self,
                  mesh: Mesh2D,
                  dispersion: np.ndarray,
-                 U: float,
-                 n: float,
+                 U,
+                 n,
                  ):
 
         self.mesh = mesh
@@ -47,17 +48,26 @@ class TPSC:
 
         # Member to hold the results
         self.g1 = None
+        self.g1_tau_r = None
+        self.g1_tau_mr = None
+
         self.g2 = None
+
+        self.chi1 = None
+
         self.mu1 = None
         self.mu2 = None
-        self.selfEnergy = None
+
+        self.self_energy = None
+
         self.main_results = {}
+
         self.Uch = -1.0
         self.Usp = -1.0
         self.docc = -1.0
 
-        self.traceSG1 = None
-        self.traceSG2 = None
+        self.trace_self_g1 = None
+        self.trace_self_g1 = None
 
 
     def calc_first_level_approx(self):
@@ -67,18 +77,37 @@ class TPSC:
 
         :meta private:
         """
-        # Calculate chi1
-        self.calc_chi1()
+        # Calculate the Green function G1 at the first level of approximation of TPSC.
+        self.calc_g1()
 
-        # Calculate Usp and Uch from the TPSC ansatz
+        # Calculate chi1 and its trace.
+        self.calc_chi1()
+        self.trace_chi1 = self.mesh.trace('B', self.chi1)
+
+        # Calculate Usp and Uch from the TPSC ansatz.
         self.calc_usp()
         self.calc_uch()
 
-        # Calculate the double occupancy
+        # Calculate the spin and charge susceptibilities.
+        self.chisp = self.calc_chisp(self.Usp)
+        self.chich = self.calc_chich(self.Uch)
+
+        # Calculate the double occupancy.
         self.docc = self.calc_double_occupancy()
 
-        # Calculate the spin correlation length
-        self.calc_xisp_commensurate()
+
+    def calc_g1(self) -> None:
+        """
+        TODO DOCUMENTATION
+        """
+
+        # Compute mu^(1)
+        dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
+        self.mu1 = brentq(lambda m: calcNfromG(self.mesh, self.dispersion[None, :, :] - m) - self.n, dispersion_min, dispersion_max, disp=True)
+        self.g1 = calcGiwnk(self.mesh, self.dispersion - self.mu1)
+
+        # Compute Fourier transforms
+        self.g1_tau_r, self.g1_tau_mr = transform_g_to_direct_space(self.mesh, self.g1)
 
 
     def calc_chi1(self):
@@ -88,21 +117,12 @@ class TPSC:
 
         :meta private:
         """
-        # Calculate the Green function G1 at the first level of approximation of TPSC
-        self.g1 = GF(self.mesh)
-        # Compute mu^(1)
-        dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
-        self.mu1 = brentq(lambda m: self.g1.calcNfromG(self.dispersion[None, :, :] - m) - self.n, dispersion_min, dispersion_max, disp=True)
-        self.g1.giwnk = self.g1.calcGiwnk(self.dispersion - self.mu1)
-
         # Calculate chi1(tau,r)
-        self.chi1 = 2.*self.g1.gtaur * self.g1.gtaumr[::-1, :]
+        self.chi1 = 2. * self.g1_tau_r * self.g1_tau_mr[::-1, :]
 
         # Fourier transform to (q,iqn)
         self.chi1 = self.mesh.r_to_k(self.chi1)
         self.chi1 = self.mesh.tau_to_wn('B', self.chi1)
-
-        self.traceChi1 = self.mesh.trace(self.chi1, 'B')
 
 
     def calc_usp(self):
@@ -116,7 +136,11 @@ class TPSC:
         Uspmax = 2./np.amax(self.chi1).real-1e-7 # Note: the 1e-7 is chosen for stability purposes
 
         # Calculate Usp
-        self.Usp = brentq(lambda m: self.calc_sum_chisp(m)-self.calc_sum_rule_chisp(m), Uspmin, Uspmax, disp=True)
+        #self.Usp = brentq(lambda u: self.calc_sum_chisp(u)-self.calc_sum_rule_chisp(u), Uspmin, Uspmax, disp=True)
+        self.Usp = brentq(lambda u: self.mesh.trace('B', self.calc_chisp(u)).real - self.calc_sum_rule_chisp(u),
+                          Uspmin,
+                          Uspmax,
+                          disp=True)
 
 
     def calc_uch(self, Uchmin=0., Uchmax=100.):
@@ -127,30 +151,24 @@ class TPSC:
         :meta private:
         """
         # Calculate Uch
-        self.Uch = brentq(lambda m: self.calc_sum_chich(m)-self.calc_sum_rule_chich(self.Usp), Uchmin, Uchmax, disp=True)
+        self.Uch = brentq(lambda u: self.mesh.trace('B', self.calc_chich(u)).real-self.calc_sum_rule_chich(self.Usp),
+                          Uchmin,
+                          Uchmax,
+                          disp=True)
 
 
-    def calc_sum_chisp(self, Usp):
+    def calc_chisp(self, usp):
         """
-        Function to compute the trace of chisp(q) = chi1(q)/(1-Usp/2*chi1(q)).
-        Also sets chisp(q,iqn) and finds the maximal value.
-
-        :meta private:
+        Computes chisp(q) = chi1(q)/(1 - Usp/2 * chi1(q)).
         """
-        self.chisp = self.chi1 / (1 - 0.5 * Usp * self.chi1)
-        self.chispmax = np.amax(self.chisp)
-        return self.mesh.trace(self.chisp, 'B').real
+        return  self.chi1 / (1 - 0.5 * usp * self.chi1)
 
 
-    def calc_sum_chich(self, Uch):
+    def calc_chich(self, uch):
         """
-        Function to compute the trace of chich(1) = chi1(q)/(1+Uch/2*chi1(q)).
-        Also sets chich(q,iqn).
-
-        :meta private:
+        Computes chich(q) = chi1(q)/(1 + Uch/2 * chi1(q)).
         """
-        self.chich = self.chi1/(1+0.5*Uch*self.chi1)
-        return self.mesh.trace(self.chich, 'B').real
+        return  self.chi1 / (1 + 0.5 * uch * self.chi1)
 
 
     def calc_double_occupancy(self):
@@ -163,43 +181,53 @@ class TPSC:
 
         :meta private:
         """
-        if (self.n<1):
-            return self.Usp/self.U*self.n*self.n/4
+        if (self.n < 1):
+            return self.Usp /self.U * self.n * self.n / 4
         else:
-            return self.Usp/(4*self.U)*(2-self.n)*(2-self.n)-1+self.n
+            return self.Usp / (4 * self.U) * (2 - self.n) * (2 - self.n) - 1 + self.n
 
 
-    def calc_sum_rule_chisp(self, Usp):
+    def calc_sum_rule_chisp(self, Usp: float) -> float:
         """
         Calculate the spin susceptibility sum rule for a specific Usp and U.
-        The TPSC ansatz we use here satisfies the particle-hole symmetry with:
-        n<1: Usp = U<n_up n_dn>/(<n_up><n_dn>)
-        n>1: Usp = U<(1-n_up)(1-n_dn)>/(<(1-n_up)><(1-n_dn)>)
+
+        The TPSC ansatz satisfies particle-hole symmetry according to:
+
+        * For n < 1: :math:`U_{sp} = U \\frac{\\langle n_{\\uparrow} n_{\\downarrow} \\rangle}{\\langle n_{\\uparrow} \\rangle \\langle n_{\\downarrow} \\rangle}`
+        * For n > 1: :math:`U_{sp} = U \\frac{\\langle (1-n_{\\uparrow})(1-n_{\\downarrow}) \\rangle}{\\langle (1-n_{\\uparrow}) \\rangle \\langle (1-n_{\\downarrow}) \\rangle}`
+
+        :param Usp: The irreducible spin vertex.
+        :type Usp: float
 
         :meta private:
         """
         if self.n<1:
-            return self.n - Usp/self.U*self.n*self.n/2
+            return self.n - Usp / self.U * self.n * self.n / 2
         else:
-            return self.n - Usp/(2*self.U)*(2-self.n)*(2-self.n)+2-2*self.n
+            return self.n - Usp / (2 * self.U) * (2 - self.n) * (2 - self.n) + 2 - 2 * self.n
 
 
-    def calc_sum_rule_chich(self, Usp):
+    def calc_sum_rule_chich(self, Usp: float) -> float:
         """
         Calculate the charge susceptibility sum rule for a specific Usp and U.
-        The TPSC ansatz we use here satisfies the particle-hole symmetry with:
-        n<1: Usp = U<n_up n_dn>/(<n_up><n_dn>)
-        n>1: Usp = U<(1-n_up)(1-n_dn)>/(<(1-n_up)><(1-n_dn)>)
+
+        The TPSC ansatz satisfies particle-hole symmetry according to:
+
+        * For n < 1: :math:`U_{sp} = U \\frac{\\langle n_{\\uparrow} n_{\\downarrow} \\rangle}{\\langle n_{\\uparrow} \\rangle \\langle n_{\\downarrow} \\rangle}`
+        * For n > 1: :math:`U_{sp} = U \\frac{\\langle (1-n_{\\uparrow})(1-n_{\\downarrow}) \\rangle}{\\langle (1-n_{\\uparrow}) \\rangle \\langle (1-n_{\\downarrow}) \\rangle}`
+
+        :param Usp: The irreducible spin vertex.
+        :type Usp: float
 
         :meta private:
         """
         if self.n<1:
             return self.n + Usp/self.U*self.n*self.n/2 - self.n*self.n
         else:
-            return self.n + Usp/(2*self.U)*(2-self.n)*(2-self.n)-2+2*self.n - self.n*self.n
+            return self.n + Usp/(2 * self.U)*(2-self.n)*(2-self.n)-2+2*self.n - self.n*self.n
 
 
-    def calc_xisp_commensurate(self) -> float:
+    def calc_xisp_commensurate(self):
         """
         Compute the spin correlation length from commensurate spin fluctuations at Q=(pi,pi).
         This calculates the width at half maximum of the spin susceptibility ONLY if its maximal value is at (pi,pi).
@@ -235,18 +263,6 @@ class TPSC:
         self.xisp = 1/(np.pi - qHM - q0)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
     def calc_second_level_approx(self):
         """
         Function to calculate the self-energy in the second level of approximation of TPSC.
@@ -258,7 +274,7 @@ class TPSC:
         :meta private:
         """
         # Get V(iqn,q)
-        V = self.U/8*(3.*self.Usp*(self.chisp)+self.Uch*(self.chich))
+        V = self.U/8.*(3.*self.Usp*(self.chisp)+self.Uch*(self.chich))
 
         # Get V(tau,r)
         Vp = self.mesh.k_to_r(V)
@@ -267,18 +283,16 @@ class TPSC:
         Vm = self.mesh.wn_to_tau('B', Vm)
 
         # Calculate the self-energy in (r,tau) space
-        self.selfEnergy = 0.5*(Vm*self.g1.gtaur+Vp*self.g1.gtaumr)
+        self.self_energy = 0.5*(Vm * self.g1_tau_r + Vp * self.g1_tau_mr)
 
         # Fourier transform
-        self.selfEnergy = self.mesh.r_to_k(self.selfEnergy)
-        self.selfEnergy = self.mesh.tau_to_wn('F', self.selfEnergy)
+        self.self_energy = self.mesh.r_to_k(self.self_energy)
+        self.self_energy = self.mesh.tau_to_wn('F', self.self_energy)
 
         # Calculate G2
-        self.g2 = GF(self.mesh)
         dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
-        self.mu2 = brentq(lambda m: self.g2.calcNfromG(self.dispersion[None, :, :] - m + self.selfEnergy) - self.n, dispersion_min, dispersion_max, disp=True)
-        self.g2.giwnk = self.g2.calcGiwnk(self.dispersion[None, :, :] - self.mu2 + self.selfEnergy)
-        return
+        self.mu2 = brentq(lambda m: calcNfromG(self.mesh, self.dispersion[None, :, :] - m + self.self_energy) - self.n, dispersion_min, dispersion_max, disp=True)
+        self.g2 = calcGiwnk(self.mesh, self.dispersion[None, :, :] - self.mu2 + self.self_energy)
 
 
     def check_self_consistency(self):
@@ -293,11 +307,11 @@ class TPSC:
         :meta private:
         """
         # Calculate the traces
-        self.traceSG1 = self.mesh.trace(self.selfEnergy * self.g1.giwnk, 'F')
-        self.traceSG2 = self.mesh.trace(self.selfEnergy * self.g2.giwnk, 'F')
+        self.trace_self_g1 = self.mesh.trace('F', self.self_energy * self.g1)
+        self.trace_self_g2 = self.mesh.trace('F', self.self_energy * self.g2)
 
         # Calculate the expected result
-        self.exactTraceSelfG = self.U*self.docc-self.U*self.n*self.n/4
+        self.exact_trace_self_g = self.U * self.docc - self.U * self.n * self.n / 4
 
 
     def solve(self):
@@ -307,20 +321,25 @@ class TPSC:
         :return: A dictionary containing main TPSC output
         :rtype: dict
         """
+        logging.basicConfig(level=logging.INFO)
+
+        logging.info('Start of TPSC calculations.')
         # Make the calculation
         self.calc_first_level_approx()
         self.calc_second_level_approx()
         self.check_self_consistency()
+
+        logging.info('End of TPSC calculations')
 
         # Prepare output
         self.main_results = {
             "Usp" : self.Usp,
             "Uch" : self.Uch,
             "doubleocc" : self.docc,
-            "Trace_chi1" : self.traceChi1,
-            "Trace_Self2_G1" : self.traceSG1,
-            "Trace_Self2_G2" : self.traceSG2,
-            "Exact_Trace_Self2_G" : self.exactTraceSelfG,
+            "Trace_chi1" : self.trace_chi1,
+            "Trace_Self2_G1" : self.trace_self_g1,
+            "Trace_Self2_G2" : self.trace_self_g2,
+            "Exact_Trace_Self2_G" : self.exact_trace_self_g,
             "mu1" : self.mu1,
             "mu2" : self.mu2,
         }
@@ -352,10 +371,10 @@ class TPSC:
             "Usp" : self.Usp,
             "Uch" : self.Uch,
             "doubleocc" : self.docc,
-            "Trace_chi1" : [self.traceChi1.real, self.traceChi1.imag],
-            "Trace_Self2_G1" : [self.traceSG1.real, self.traceSG1.imag],
-            "Trace_Self2_G2" : [self.traceSG2.real, self.traceSG2.imag],
-            "Exact_Trace_Self2_G" : self.exactTraceSelfG,
+            "Trace_chi" : [self.trace_chi1.real, self.trace_chi1.imag],
+            "Trace_Self2_G1" : [self.trace_self_g1.real, self.trace_self_g1.imag],
+            "Trace_Self2_G2" : [self.trace_self_g2.real, self.trace_self_g2.imag],
+            "Exact_Trace_Self2_G" : self.exact_trace_self_g,
             "mu1" : self.mu1,
             "mu2" : self.mu2,
         }
@@ -379,7 +398,7 @@ class TPSC:
         """
         inds = np.arange(Wn_range[0], Wn_range[1]+1, 1)
         ind_kpoint_node = self.mesh.get_ind_kpt(coordinates[0], coordinates[1])
-        vals_s2 = self.mesh.get_specific_wn("F", self.selfEnergy[:,ind_kpoint_node], inds)
+        vals_s2 = self.mesh.get_specific_wn("F", self.self_energy[:,ind_kpoint_node], inds)
         if ax is None:
             fig,ax = plt.subplots()
         ax.set_title("Self-energy node")

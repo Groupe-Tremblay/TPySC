@@ -1,3 +1,3 @@
-from .gf import GF
 from .mesh import Mesh2D
-from .tpsc import TPSC
+from .tpsc import Tpsc
+from .tpscplus import TpscPlus

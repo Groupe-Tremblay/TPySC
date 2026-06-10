@@ -1,5 +1,6 @@
 import numpy as np
 import sparse_ir
+from scipy.interpolate import BarycentricInterpolator
 
 """
 Date: June 22, 2023
@@ -9,7 +10,6 @@ class Mesh2D:
     Holding class for k-mesh and sparsely sampled imaginary time 'tau' / Matsubara frequency 'iw_n' grids.
     Additionally it defines the Fourier transform routines 'r <-> k'  and 'tau <-> l <-> wn'.
     This is valid for the 2D case
-    Requires an input dispersion
     Credit for the basics: Niklas Witt
     https://spm-lab.github.io/sparse-ir-tutorial/src/TPSC_py.html
     """
@@ -64,19 +64,19 @@ class Mesh2D:
         return obj_tau
 
 
-    def k_to_r(self,obj_k):
+    def k_to_r(self, obj_k):
         """ Fourier transform from k-space to real space """
         obj_r = np.fft.ifftn(obj_k,axes=(1,2))
         return obj_r
 
 
-    def k_to_mr(self,obj_k):
+    def k_to_mr(self, obj_k):
         """ Fourier transform from k-space to real space (with a - sign) """
         obj_r = np.fft.fftn(obj_k, axes=(1,2), norm="forward")
         return obj_r
 
 
-    def r_to_k(self,obj_r):
+    def r_to_k(self, obj_r):
         """ Fourier transform from real space to k-space """
         obj_k = np.fft.fftn(obj_r,axes=(1,2))
         return obj_k
@@ -123,41 +123,37 @@ class Mesh2D:
         return np.squeeze(calculated_obj_wn)
 
 
-    def _lagrange_extrapolation_zero_freq_nth_order(self, xs, ys):
+    def extrapolate_fermionic_zero_freq(self, obj_wn, n_freqs: int=4, eta: float=0.001):
         """
-        Routine that evaluates the Lagrange polynomial passing through the points
-        xs=[x1, x2, ..., xn+1], ys=[y1, y2, ..., yn+1]. The expected shape of the arguments is
-        xs: 1D array of frequencies
-        ys: array of datapoints to extrapolate to 0 frequency. If ys is multidimensional,
-            it is assumed that the first dimension is the frequency dependence
-        """
-        val = np.zeros_like(ys[0,...])
-        for i in range(ys.shape[0]):
-            prod_temp=1
-            for j in range(ys.shape[0]):
-                if j != i:
-                    prod_temp *= -xs[j] / (xs[i] - xs[j])
-            val += prod_temp * ys[i,...]
-        return val
+        Extrapolate a fermionic function to zero frequency using barycentric Lagrange interpolation
+        for the first n_freqs Matsubara frequencies.
 
+        :param obj_wn: The fermionic function object to extrapolate.
+        :type obj_wn: object
+        :param n_freqs: Number of Matsubara frequencies to use for interpolation.
+                        Defaults to 4.
+        :type n_freqs: int
+        :param eta: Small imaginary frequency offset for extrapolation (typically used to avoid
+                    exact zero). Defaults to 0.001.
+        :type eta: float
+        :return: The extrapolated function value at frequency i*eta.
+        :rtype: float or array-like
 
-    def extrapolate_zero_freq(self, obj_wn, n_freqs):
-        """
-        Routine that uses a Lagrange extrapolation of the n_freqs first
-        Matsubara frequencies to extrapolate a fermionic correlation
-        function to wn=0.
+        .. note::
+        The small offset eta helps avoid numerical issues
+        at exactly zero frequency.
         """
         # We evaluate the first few frequencies
         indices = np.arange(n_freqs, dtype='int')
-        frequencies_interpolation = (2*indices+1)*np.pi*self.T
-
+        freq_interp = (2*indices+1)*np.pi*self.T
         evaluated_data = self.get_specific_wn('F', obj_wn, indices)
 
         # We use our routine to evaluate the zero-frequency correlation function
-        return self._lagrange_extrapolation_zero_freq_nth_order(frequencies_interpolation, evaluated_data)
+        interpolation_object = BarycentricInterpolator(freq_interp, evaluated_data, axis=0)
+        return interpolation_object(eta)
 
 
-    def trace(self, obj, statistic: str, tau_value: float = 0):
+    def trace(self, statistic: str, obj,  tau_value: float = 0) -> float:
         """
             TODO Documentation
         """
@@ -193,3 +189,17 @@ class Mesh2D:
         # We find the index for the k-point which has the minimum distance
         # squared from (kx, ky)
         return dist2_arr.argmin()
+
+
+    def save_k_grid_function(file_name: str, obj) -> None:
+        """
+
+        :param obj:
+
+        """
+        pass
+
+
+    @property
+    def shape(self) -> float:
+        return (len(self.iwn_f), self.nk1, self.nk1)
