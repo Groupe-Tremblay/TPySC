@@ -190,8 +190,8 @@ class Mesh2D:
         return dist2_arr.argmin()
 
 
-    def save_k_grid_function(self, target_file: str, data_label: str, obj: np.ndarray) -> None:
-         """
+    def save_k_grid_function(self, target_file: str, data_label: str, obj: np.ndarray, io_mode: str='a') -> None:
+        """
         Save a k-space grid array to an HDF5 file.
 
         For complex-valued arrays, the real and imaginary parts are stored
@@ -216,9 +216,8 @@ class Mesh2D:
             Optimize the slicing operation for large arrays.
         """
         # TODO Check that is is really a grid
-
         save_obj = obj[:(self.nk1//2),:(self.nk1//2)] # TODO This can be optimized
-        with h5py.File(target_file, "w") as f:
+        with h5py.File(target_file, io_mode) as f: # TODO This will overwrite the content.
             if np.iscomplexobj(obj): # Seperate real and complex part for ease of vizualisation.
                 grp = f.create_group(data_label)
                 grp.create_dataset("real", data=save_obj.real)
