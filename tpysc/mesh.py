@@ -218,6 +218,11 @@ class Mesh2D:
         # TODO Check that is is really a grid
         save_obj = obj[:(self.nk1//2),:(self.nk1//2)] # TODO This can be optimized
         with h5py.File(target_file, io_mode) as f: # TODO This will overwrite the content.
+
+            # Delete the data if it is already inside the file
+            if (data_label in f) and io_mode == 'a':
+                del f[data_label]
+
             if np.iscomplexobj(obj): # Seperate real and complex part for ease of vizualisation.
                 grp = f.create_group(data_label)
                 grp.create_dataset("real", data=save_obj.real)
