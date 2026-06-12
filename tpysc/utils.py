@@ -1,8 +1,8 @@
 import numpy as np
 
+
 def pade(omega_n: list,
-			real_part: np.ndarray,
-			imag_part: np.ndarray,
+			f_n: np.ndarray,
 			wmin: float,
 			wmax: float,
 			nbr_w: int,
@@ -15,6 +15,11 @@ def pade(omega_n: list,
     using the Padé approximant method. The algorithm builds a continued fraction representation
     of the function and evaluates it at real frequencies with a small broadening parameter.
 
+    :param omega_n: Matsubara frequencies (imaginary axis frequencies in energy units).
+    :type omega_n: list
+
+    :param f_n: Spectral function values at Matsubara frequencies, shape (N,).
+    :type f_n: np.ndarray
 
     :param wmin: Minimum real frequency (in energy units) for the output grid.
     :type wmin: float
@@ -52,8 +57,7 @@ def pade(omega_n: list,
         give sharper features but may amplify noise; larger values smooth features but reduce
         resolution. Choose based on data quality and desired spectral resolution.
     """
-	f_n = real_part + 1j * imag_part # Total matsubara evaluated function.
-	N = len(f_n)
+	N = len(omega_n)
 
 	# We only keep rows of the g matrix.
 	g_prev = (f_n[0] - f_n) / ((omega_n - omega_n[0]) * 1.j * f_n + epsilon)
