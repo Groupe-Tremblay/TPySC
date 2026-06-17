@@ -8,7 +8,8 @@ def calcGiwnk(mesh: Mesh2D, z):
     """
     Calculate a general Matsubara Green's function in the form 1/(iwn - z).
     """
-    return 1 / (mesh.iwn_f[:, None, None] - z)
+    iwn = 1j * mesh.IR_basis_set.wn_f * np.pi * mesh.T
+    return 1 / (iwn[:, None, None] - z)
 
 
 def calcNfromG(mesh: Mesh2D, z):

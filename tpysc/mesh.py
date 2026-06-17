@@ -27,7 +27,7 @@ class Mesh2D:
         self.T = T
 
         # Generate k-mesh and dispersion
-        self.nk1, self.nk2, self.nk = nk1, nk1, nk1*nk1
+        self.nk1, self.nk2, self.nk = nk1, nk1, nk1*nk1 # TODO Make this more flexible
         self.k1, self.k2 = np.meshgrid(np.arange(self.nk1)/self.nk1, np.arange(self.nk2)/self.nk2)
 
         # Lowest Matsubara frequency index
@@ -217,20 +217,29 @@ class Mesh2D:
         """
         # TODO Check that is is really a grid
         save_obj = obj[:(self.nk1//2),:(self.nk1//2)] # TODO This can be optimized
-        with h5py.File(target_file, io_mode) as f: # TODO This will overwrite the content.
 
+        self.__save_hdf__(target_file, data_label, save_obj, io_mode)
+
+
+    def save_wn_function(self, target_file: str, data_label: str, obj: np.ndarray, io_mode: str) -> None:
+        """
+            TODO Docstring
+        """
+        self.__save_hdf__(target_file, data_label, io_mode)
+
+
+    def __save_hdf__(self, target_file: str, data_label: str, obj: np.ndarray, io_mode: str) -> None:
+        """
+            TODO Docstring
+        """
+        with h5py.File(target_file, io_mode) as f:
             # Delete the data if it is already inside the file
             if (data_label in f) and io_mode == 'a':
                 del f[data_label]
 
             if np.iscomplexobj(obj): # Seperate real and complex part for ease of vizualisation.
                 grp = f.create_group(data_label)
-                grp.create_dataset("real", data=save_obj.real)
-                grp.create_dataset("imag", data=save_obj.imag)
+                grp.create_dataset("real", data=obj.real)
+                grp.create_dataset("imag", data=obj.imag)
             else:
-                f.create_dataset(data_label, data=save_obj)
-
-
-    @property
-    def shape(self) -> float: # TODO This is not very rigourous
-        return (len(self.iwn_f), self.nk1, self.nk1)
+                f.create_dataset(data_label, data=obj)

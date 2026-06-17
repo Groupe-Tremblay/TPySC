@@ -55,9 +55,10 @@ class TpscPlus:
             self.tpsc_obj.calc_usp()
         else:
             # Set the self-energy.
-            if np.shape(self_energy)[0] < len(self.mesh.iwn_f): # Check if len(selfE) < len(iwn).
-                diffshape = len(self.mesh.iwn_f) - np.shape(self_energy)[0] # If so, gets the difference in lengths.
-                self.self_energy = np.zeros(self.mesh.shape, dtype=complex) # Create empty array to fill.
+            if np.shape(self_energy)[0] < len(self.mesh.IR_basis_set.wn_f): # Check if len(selfE) < len(iwn).
+                diffshape = len(self.mesh.IR_basis_set.wn_f) - np.shape(self_energy)[0] # If so, gets the difference in lengths.
+                shape_of_mesh = (len(self.mesh.IR_basis_set.wn_f), self.mesh.nk1, self.mesh.nk2)
+                self.self_energy = np.zeros(shape_of_mesh, dtype=complex) # Create empty array to fill.
                 self.self_energy[diffshape//2:-diffshape//2,:] = self_energy # Fill it with known values (approximative).
 
             # Compute the new G2.
