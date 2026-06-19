@@ -36,15 +36,10 @@ class Tpsc:
     def __init__(self,
                  mesh: Mesh2D,
                  dispersion: np.ndarray,
-                 U,
-                 n,
                  ):
 
         self.mesh = mesh
         self.dispersion = dispersion
-
-        self.n = n
-        self.U = U
 
         # Member to hold the results
         self.g1 = None
@@ -70,7 +65,7 @@ class Tpsc:
         self.trace_self_g1 = None
 
 
-    def calc_first_level_approx(self):
+    def calc_first_level_approx(self, n: float, U: float):
         """
         Do the first level of approximation of TPSC.
         This calculates chi1, and then obtains chisp and chich from the sum rules and the TPSC ansatz.
@@ -78,32 +73,32 @@ class Tpsc:
         :meta private:
         """
         # Calculate the Green function G1 at the first level of approximation of TPSC.
-        self.calc_g1()
+        self.calc_g1(n)
 
         # Calculate chi1 and its trace.
         self.calc_chi1()
         self.trace_chi1 = self.mesh.trace('B', self.chi1)
 
         # Calculate Usp and Uch from the TPSC ansatz.
-        self.calc_usp()
-        self.calc_uch()
+        self.Usp = self.calc_usp(n, U)
+        self.Uch = self.calc_uch(n, U)
 
         # Calculate the spin and charge susceptibilities.
         self.chisp = self.calc_chisp(self.Usp)
         self.chich = self.calc_chich(self.Uch)
 
         # Calculate the double occupancy.
-        self.docc = self.calc_double_occupancy()
+        self.docc = self.calc_double_occupancy(n, U)
 
 
-    def calc_g1(self) -> None:
+    def calc_g1(self, n: float) -> None:
         """
         TODO DOCUMENTATION
         """
 
         # Compute mu^(1)
         dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
-        self.mu1 = brentq(lambda m: calcNfromG(self.mesh, self.dispersion[None, :, :] - m) - self.n, dispersion_min, dispersion_max, disp=True)
+        self.mu1 = brentq(lambda m: calcNfromG(self.mesh, self.dispersion[None, :, :] - m) - n, dispersion_min, dispersion_max, disp=True)
         self.g1 = calcGiwnk(self.mesh, self.dispersion - self.mu1)
 
         # Compute Fourier transforms
@@ -125,7 +120,7 @@ class Tpsc:
         self.chi1 = self.mesh.tau_to_wn('B', self.chi1)
 
 
-    def calc_usp(self):
+    def calc_usp(self, n: float, U: float) -> float:
         """
         Function to compute Usp from chi1 and the sum rule.
 
@@ -136,14 +131,13 @@ class Tpsc:
         Uspmax = 2./np.amax(self.chi1).real-1e-7 # Note: the 1e-7 is chosen for stability purposes
 
         # Calculate Usp
-        #self.Usp = brentq(lambda u: self.calc_sum_chisp(u)-self.calc_sum_rule_chisp(u), Uspmin, Uspmax, disp=True)
-        self.Usp = brentq(lambda u: self.mesh.trace('B', self.calc_chisp(u)).real - self.calc_sum_rule_chisp(u),
+        return brentq(lambda u: self.mesh.trace('B', self.calc_chisp(u)).real - self.calc_sum_rule_chisp(u, n, U),
                           Uspmin,
                           Uspmax,
                           disp=True)
 
 
-    def calc_uch(self, Uchmin=0., Uchmax=100.):
+    def calc_uch(self, n: float, U: float, Uchmin=0., Uchmax=100.):
         """
         Function to compute Uch from chi1 and the sum rule.
         Note: calc_usp has to be called before this function.
@@ -151,10 +145,10 @@ class Tpsc:
         :meta private:
         """
         # Calculate Uch
-        self.Uch = brentq(lambda u: self.mesh.trace('B', self.calc_chich(u)).real-self.calc_sum_rule_chich(self.Usp),
-                          Uchmin,
-                          Uchmax,
-                          disp=True)
+        return = brentq(lambda u: self.mesh.trace('B', self.calc_chich(u)).real-self.calc_sum_rule_chich(self.Usp, n, U),
+                        Uchmin,
+                        Uchmax,
+                        disp=True)
 
 
     def calc_chisp(self, usp):
@@ -171,7 +165,7 @@ class Tpsc:
         return  self.chi1 / (1 + 0.5 * uch * self.chi1)
 
 
-    def calc_double_occupancy(self):
+    def calc_double_occupancy(self, n: float, U: float):
         """
         Function to compute the double occupancy.
         Note: the function calc_usp has to be called before this one
@@ -181,13 +175,13 @@ class Tpsc:
 
         :meta private:
         """
-        if (self.n < 1):
-            return self.Usp /self.U * self.n * self.n / 4
+        if (n < 1):
+            return self.Usp /U * n * n / 4
         else:
-            return self.Usp / (4 * self.U) * (2 - self.n) * (2 - self.n) - 1 + self.n
+            return self.Usp / (4 * U) * (2 - n) * (2 - n) - 1 + n
 
 
-    def calc_sum_rule_chisp(self, Usp: float) -> float:
+    def calc_sum_rule_chisp(self, Usp: float, n: float, U: float) -> float:
         """
         Calculate the spin susceptibility sum rule for a specific Usp and U.
 
@@ -201,13 +195,13 @@ class Tpsc:
 
         :meta private:
         """
-        if self.n<1:
-            return self.n - Usp / self.U * self.n * self.n / 2
+        if n < 1:
+            return n - Usp / U * n * n / 2
         else:
-            return self.n - Usp / (2 * self.U) * (2 - self.n) * (2 - self.n) + 2 - 2 * self.n
+            return n - Usp / (2 * U) * (2 - n) * (2 - n) + 2 - 2 * n
 
 
-    def calc_sum_rule_chich(self, Usp: float) -> float:
+    def calc_sum_rule_chich(self, Usp: float, n: float, U: float) -> float:
         """
         Calculate the charge susceptibility sum rule for a specific Usp and U.
 
@@ -221,10 +215,10 @@ class Tpsc:
 
         :meta private:
         """
-        if self.n<1:
-            return self.n + Usp/self.U*self.n*self.n/2 - self.n*self.n
+        if n < 1:
+            return n + Usp/U*n*n/2 - n*n
         else:
-            return self.n + Usp/(2 * self.U)*(2-self.n)*(2-self.n)-2+2*self.n - self.n*self.n
+            return n + Usp/(2 * U)*(2-n)*(2-n)-2+2*n - n*n
 
 
     def calc_xisp_commensurate(self):
@@ -263,7 +257,7 @@ class Tpsc:
         self.xisp = 1/(np.pi - qHM - q0)
 
 
-    def calc_second_level_approx(self):
+    def calc_second_level_approx(self, n: float, U: float):
         """
         Function to calculate the self-energy in the second level of approximation of TPSC.
         Important: The function calc_first_level_approx must be called before this one.
@@ -274,7 +268,7 @@ class Tpsc:
         :meta private:
         """
         # Get V(iqn,q)
-        V = self.U/8.*(3.*self.Usp*(self.chisp)+self.Uch*(self.chich))
+        V = U / 8. * (3.*self.Usp*(self.chisp)+self.Uch*(self.chich))
 
         # Get V(tau,r)
         Vp = self.mesh.k_to_r(V)
@@ -291,11 +285,11 @@ class Tpsc:
 
         # Calculate G2
         dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
-        self.mu2 = brentq(lambda m: calcNfromG(self.mesh, self.dispersion[None, :, :] - m + self.self_energy) - self.n, dispersion_min, dispersion_max, disp=True)
+        self.mu2 = brentq(lambda m: calcNfromG(self.mesh, self.dispersion[None, :, :] - m + self.self_energy) - n, dispersion_min, dispersion_max, disp=True)
         self.g2 = calcGiwnk(self.mesh, self.dispersion[None, :, :] - self.mu2 + self.self_energy)
 
 
-    def check_self_consistency(self):
+    def check_self_consistency(self, n: float, U: float):
         """
         Function to check the self-consistency between one- and two-particle quantities through:
         Tr[Self-Energy*Green's function] = U<n_up n_dn> - Un^2/4
@@ -311,10 +305,10 @@ class Tpsc:
         self.trace_self_g2 = self.mesh.trace('F', self.self_energy * self.g2)
 
         # Calculate the expected result
-        self.exact_trace_self_g = self.U * self.docc - self.U * self.n * self.n / 4
+        self.exact_trace_self_g = U * self.docc - U * n * n / 4
 
 
-    def solve(self):
+    def solve(self, n: float, U: float,):
         """
         Run the TPSC method
 
@@ -325,9 +319,9 @@ class Tpsc:
 
         logging.info('Start of TPSC calculations.')
         # Make the calculation
-        self.calc_first_level_approx()
-        self.calc_second_level_approx()
-        self.check_self_consistency()
+        self.calc_first_level_approx(n, U)
+        self.calc_second_level_approx(n, U)
+        self.check_self_consistency(n, U)
 
         logging.info('End of TPSC calculations')
 
