@@ -9,30 +9,16 @@ from scipy.optimize import brentq
 
 class Tpsc:
     """
-    Class to set up a TPSC calculation.
-    Calculation is carried using the ``run()`` method.
+    Set up a TPSC calculation.
 
-    :param n: Density
-    :type n: double
-    :param U: Hubbard interaction
-    :type U: double
-    :param t: First neighbour hopping
-    :type t: double
-    :param tp: Second neighbour hopping
-    :type tp: double
-    :param tpp: Third neighbour hopping
-    :type tpp: double
-    :param nkx: Number of k-points in one space direction
-    :type nkx: int
-    :param dispersion_scheme: Dispersion scheme (either `triangle` or `square`)
-    :type dispersion_scheme: str
-    :param T: Temperature
-    :type T: double
-    :param wmax_mult: For IR basis, multiple of bandwidth to use as wmax (must be greater than 1)
-    :type wmax_mult: double, optional
-    :param IR_tol: For IR basis, tolerance of intermediate representation (default = 1e-12)
-    :type IR_tol: double, optional
+    The calculation is performed using the :meth:`run` method.
+
+    :param mesh: Two-dimensional momentum/frequency mesh used for the calculation.
+    :type mesh: Mesh2D
+    :param dispersion: Array containing the dispersion values defined on the mesh.
+    :type dispersion: numpy.ndarray
     """
+
     def __init__(self,
                  mesh: Mesh2D,
                  dispersion: np.ndarray,
@@ -45,24 +31,21 @@ class Tpsc:
         self.g1 = None
         self.g1_tau_r = None
         self.g1_tau_mr = None
-
-        self.g2 = None
-
-        self.chi1 = None
-
         self.mu1 = None
-        self.mu2 = None
-
-        self.self_energy = None
-
-        self.main_results = {}
-
-        self.Uch = -1.0
+        self.chi1 = None
         self.Usp = -1.0
         self.docc = -1.0
+        self.Uch = -1.0
+        self.g2 = None
+        self.mu2 = None
+        self.self_energy = None
+        self.main_results = {}
+        self.trace_self_g1 = None
+        self.trace_self_g1 = None
 
-        self.trace_self_g1 = None
-        self.trace_self_g1 = None
+        # Logging
+        self.logger = logging.getLogger("TPSC")
+
 
 
     def calc_first_level_approx(self, n: float, U: float):
@@ -145,10 +128,10 @@ class Tpsc:
         :meta private:
         """
         # Calculate Uch
-        return = brentq(lambda u: self.mesh.trace('B', self.calc_chich(u)).real-self.calc_sum_rule_chich(self.Usp, n, U),
-                        Uchmin,
-                        Uchmax,
-                        disp=True)
+        return brentq(lambda u: self.mesh.trace('B', self.calc_chich(u)).real-self.calc_sum_rule_chich(self.Usp, n, U),
+                    Uchmin,
+                    Uchmax,
+                    disp=True)
 
 
     def calc_chisp(self, usp):
@@ -315,15 +298,21 @@ class Tpsc:
         :return: A dictionary containing main TPSC output
         :rtype: dict
         """
-        logging.basicConfig(level=logging.INFO)
+        self.logger.setLevel(logging.DEBUG)
+        # Handler
+        handler = logging.StreamHandler()
+        handler.setLevel(logging.DEBUG)
+        # Formatter
+        formatter = logging.Formatter('%(asctime)s.%(msecs)03d - %(name)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
 
-        logging.info('Start of TPSC calculations.')
-        # Make the calculation
+        # Calculations
+        self.logger.info('Start of TPSC calculations.')
         self.calc_first_level_approx(n, U)
         self.calc_second_level_approx(n, U)
         self.check_self_consistency(n, U)
-
-        logging.info('End of TPSC calculations')
+        self.logger.info('End of TPSC calculations')
 
         # Prepare output
         self.main_results = {
