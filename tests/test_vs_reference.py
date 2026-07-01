@@ -29,9 +29,9 @@ def test_compare_tpsc():
 
     mesh = tpysc.mesh.Mesh2D(**parameters["mesh"])
     dispersion = tpysc.dispersions.calcDispersion2DSquare(mesh, **parameters["dispersion"])
-    obj = tpysc.Tpsc(mesh, dispersion, **parameters["tpsc"])
+    obj = tpysc.Tpsc(mesh, dispersion,)
 
-    results = obj.solve()
+    results = obj.solve(**parameters["tpsc"])
 
     # Load the reference results
     with open("ref_tpsc.json", 'r') as reference_filename:
@@ -47,9 +47,9 @@ def test_compare_tpsc():
 
 def test_compare_tpscplus():
     """
-    A simple test that compare results from the current commit to those of f5dc1ceff8627341739142caea4d4d09678a0b74
+    A simple test that compare results from the current commit to those of Camille Lahaie's code.
     """
-    # Run the reference TPSC calculation
+    # Run the reference TPSC+ calculation
     parameters = {
         "mesh": {
             "T" : 0.1,                # Temperature
@@ -70,9 +70,9 @@ def test_compare_tpscplus():
 
     mesh = tpysc.mesh.Mesh2D(**parameters["mesh"])
     dispersion = tpysc.dispersions.calcDispersion2DSquare(mesh, **parameters["dispersion"])
-    obj = tpysc.TpscPlus(mesh, dispersion, **parameters["tpsc"])
+    obj = tpysc.TpscPlus(mesh, dispersion)
 
-    results = obj.solve()
+    results = obj.solve(**parameters["tpsc"])
 
     # Load the reference results
     with open("ref_tpscplus_lahaie.json", 'r') as reference_filename:
