@@ -47,6 +47,19 @@ class Tpsc:
         self.logger = logging.getLogger("TPSC")
 
 
+    def __init_logger__(self,):
+        """
+        TODO DOCSTRING
+        """
+        self.logger.setLevel(logging.DEBUG)
+        # Handler
+        handler = logging.StreamHandler()
+        handler.setLevel(logging.DEBUG)
+        # Formatter
+        formatter = logging.Formatter('%(asctime)s.%(msecs)03d - %(name)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
+
 
     def calc_first_level_approx(self, n: float, U: float):
         """
@@ -116,7 +129,7 @@ class Tpsc:
         Uspmax = 2./np.amax(self.chi1).real-1e-7 # Note: the 1e-7 is chosen for stability purposes
 
         # Calculate Usp
-        return brentq(lambda u: self.mesh.trace('B', self.calc_chisp(u)).real - self.calc_sum_rule_chisp(u, n, U),
+        return brentq(lambda usp: self.mesh.trace('B', self.calc_chisp(usp)).real - self.calc_sum_rule_chisp(usp, n, U),
                           Uspmin,
                           Uspmax,
                           disp=True)
@@ -301,14 +314,7 @@ class Tpsc:
         :return: A dictionary containing main TPSC output
         :rtype: dict
         """
-        self.logger.setLevel(logging.DEBUG)
-        # Handler
-        handler = logging.StreamHandler()
-        handler.setLevel(logging.DEBUG)
-        # Formatter
-        formatter = logging.Formatter('%(asctime)s.%(msecs)03d - %(name)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
+        self.__init_logger__()
 
         # Calculations
         self.logger.info(f'Start of TPSC calculations (n={n:.4f}, U={U:.4f}, T={self.mesh.T:.4f})')

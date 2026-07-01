@@ -10,13 +10,11 @@ class TpscPlus:
     def __init__(self,
                  mesh: Mesh2D,
                  dispersion: np.ndarray,
-                 U: float,
-                 n: float,
                  ):
         """
         TODO Documentation
         """
-        self.tpsc_obj = Tpsc(mesh, dispersion, U, n)
+        self.tpsc_obj = Tpsc(mesh, dispersion,)
 
         self.g2 = None
         self.self_energy = None
@@ -32,30 +30,36 @@ class TpscPlus:
 
 
     def solve(self,
-              alpha: float = 0.5, # TODO Déterminer la valeur de ça
-              msd2precision: float = 1e-5,
-              msdInfprecision: float = 1e-3,
-              iter_max: int = 1_000,
-              usp_max: float = 0.,
-              usp_prev_T: float = 0.,
-              self_energy: np.ndarray = None,
-              ) -> None:
+            n: float,
+            U: float,
+            alpha: float = 0.5, # TODO Déterminer la valeur de ça
+            msd2precision: float = 1e-5,
+            msdInfprecision: float = 1e-3,
+            iter_max: int = 1_000,
+            usp_max: float = 0.,
+            usp_prev_T: float = 0.,
+            self_energy: np.ndarray = None,
+            ) -> None:
         """
         TODO Documentation
         """
-        logging.basicConfig(level=logging.DEBUG)
-        logging.info("Start of TPSC+ calculations.")
+        self.tpsc_obj.__init_logger__()
+        self.logger.info("Start of TPSC+ calculations.")
 
         # First do a regular TPSC procedure.
         # Calculate the Green function G1 at the first level of approximation of TPSC.
-        self.tpsc_obj.calc_g1()
+        self.tpsc_obj.calc_g1(n)
 
         if self_energy is None:
             self.tpsc_obj.calc_chi1()
-            self.tpsc_obj.calc_usp()
+            self.Usp = self.tpsc_obj.calc_usp(n, U)
         else:
+            self.logger.info("Self-energy already set.")
+
             # Set the self-energy.
             if np.shape(self_energy)[0] < len(self.mesh.IR_basis_set.wn_f): # Check if len(selfE) < len(iwn).
+                self.logger.info("Casting self energy on new mesh.")
+
                 diffshape = len(self.mesh.IR_basis_set.wn_f) - np.shape(self_energy)[0] # If so, gets the difference in lengths.
                 shape_of_mesh = (len(self.mesh.IR_basis_set.wn_f), self.mesh.nk1, self.mesh.nk2)
                 self.self_energy = np.zeros(shape_of_mesh, dtype=complex) # Create empty array to fill.
@@ -63,29 +67,28 @@ class TpscPlus:
 
             # Compute the new G2.
             dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
-            self.mu2 = brentq(lambda m: calcNfromG(self.mesh, self.dispersion[None, :, :] - m + self.self_energy) - self.n, dispersion_min, dispersion_max, disp=True)
+            self.mu2 = brentq(lambda m: calcNfromG(self.mesh, self.dispersion[None, :, :] - m + self.self_energy) - n, dispersion_min, dispersion_max, disp=True)
             self.g2 = calcGiwnk(self.mesh, self.dispersion[None, :, :] - self.mu2 + self.self_energy)
 
             # Update chi2.
             self.calc_chi2()
 
             # Calculate Usp and Uch from the TPSC ansatz.
-            self.tpsc_obj.calc_usp() # XXX This could be changed?
+            self.tpsc_obj.calc_usp() # XXX This might have to be changed
 
-        self.tpsc_obj.calc_uch() # XXX This is wrong
+        self.tpsc_obj.calc_uch(n, U)
 
         # Calculate the spin and charge susceptibilities.
         self.tpsc_obj.chisp = self.tpsc_obj.calc_chisp(self.Usp)
         self.tpsc_obj.chich = self.tpsc_obj.calc_chich(self.tpsc_obj.Uch)
 
         # Calculate the double occupancy.
-        self.docc = self.tpsc_obj.calc_double_occupancy()
-
+        self.docc = self.tpsc_obj.calc_double_occupancy(n, U)
         # Perform the second level approx as usual.
-        self.tpsc_obj.calc_second_level_approx()
+        self.tpsc_obj.calc_second_level_approx(n, U)
 
         # Do the TPSC+ loop.
-        logging.info("Start of TPSC+ self-consistent loop.")
+        logging.info("Start of TPSC+ self-consistent loop...")
         for i in range(iter_max):
 
             if i > 0 and alpha > 0:
@@ -93,7 +96,7 @@ class TpscPlus:
 
                 # Compute the new G2
                 dispersion_min, dispersion_max = np.amin(self.dispersion), np.amax(self.dispersion)
-                self.mu2 = brentq(lambda m: calcNfromG(self.mesh, self.dispersion[None, :, :] - m + self.self_energy) - self.n, dispersion_min, dispersion_max, disp=True)
+                self.mu2 = brentq(lambda m: calcNfromG(self.mesh, self.dispersion[None, :, :] - m + self.self_energy) - n, dispersion_min, dispersion_max, disp=True)
                 self.g2 = calcGiwnk(self.mesh, self.dispersion[None, :, :] - self.mu2 + self.self_energy)
             else:
                 self.g2 = self.tpsc_obj.g2
@@ -103,18 +106,18 @@ class TpscPlus:
             self.calc_chi2()
 
             # Calculate Usp and Uch from the TPSC ansatz.
-            self.calc_usp()
-            self.tpsc_obj.calc_uch()
+            self.calc_usp(n, U)
+            self.tpsc_obj.calc_uch(n, U)
 
             # Calculate the spin and charge susceptibilities.
             self.tpsc_obj.chisp = self.tpsc_obj.calc_chisp(self.Usp)
             self.tpsc_obj.chich = self.tpsc_obj.calc_chich(self.tpsc_obj.Uch)
 
             # Calculate the double occupancy.
-            self.docc = self.tpsc_obj.calc_double_occupancy()
+            self.docc = self.tpsc_obj.calc_double_occupancy(n, U)
 
-            # Perform the second level approx as usual.
-            self.tpsc_obj.calc_second_level_approx()
+            # Perform the second level approx.
+            self.tpsc_obj.calc_second_level_approx(n, U)
 
             # Check the convergence
             # delta_i = self.delta_out
@@ -141,7 +144,7 @@ class TpscPlus:
         self.self_energy = self.tpsc_obj.self_energy
         # Check consistency
         self.trace_chi2 = self.mesh.trace('B', self.chi2)
-        self.tpsc_obj.check_self_consistency()
+        self.tpsc_obj.check_self_consistency(n, U)
 
         # Prepare output
         self.main_results = {
@@ -159,7 +162,10 @@ class TpscPlus:
         return self.main_results
 
 
-    def calc_usp(self, gamma: float = 0.8):
+    def calc_usp(self,
+                n: float,
+                U: float,
+                gamma: float = 0.8):
         """
         Docstring for calc_usp
 
@@ -167,10 +173,6 @@ class TpscPlus:
         """
         usp_min = 1e-6
         small_num_for_usp_max = 1e-9
-
-        # Relevant parameters TODO use as function params
-        U = self.tpsc_obj.U
-        n = self.n
 
         # Compute the trace of chi2 squared.
         trace_chi2_sq = self.mesh.trace('B', self.chi2 * np.conj(self.chi2))
@@ -181,7 +183,7 @@ class TpscPlus:
 
         # Find the upper bound for Usp that best suits the situation
         if usp_max_abs < usp_crit: # Typically away from the critical regime
-            if self.mesh.trace('B', self.calc_chisp(usp_max_abs)).real - self.calc_sum_rule_chisp(usp_max_abs) > 0:
+            if self.mesh.trace('B', self.calc_chisp(usp_max_abs)).real - self.calc_sum_rule_chisp(usp_max_abs, n, U) > 0:
                 usp_max_h = usp_max_abs
             else:
                 usp_max_h = usp_crit - small_num_for_usp_max
@@ -190,7 +192,7 @@ class TpscPlus:
 
         # Yury added a while loop to have an upper bound on the positive side of the function's crossing for brentq.
         # TODO Check if this is redundant with the previous if statement
-        temp_usp_max_h_rule = self.mesh.trace('B', self.calc_chisp(usp_max_h)).real - self.calc_sum_rule_chisp(usp_max_h)
+        temp_usp_max_h_rule = self.mesh.trace('B', self.calc_chisp(usp_max_h)).real - self.calc_sum_rule_chisp(usp_max_h, n, U)
         usp_braketed = True
         while temp_usp_max_h_rule < 0:
             small_num_for_usp_max /= 10
@@ -198,10 +200,10 @@ class TpscPlus:
                 usp_braketed = False
                 break
             usp_max_h = usp_crit - small_num_for_usp_max
-            temp_usp_max_h_rule = self.mesh.trace('B', self.calc_chisp(usp_max_h)).real - self.calc_sum_rule_chisp(usp_max_h)
+            temp_usp_max_h_rule = self.mesh.trace('B', self.calc_chisp(usp_max_h)).real - self.calc_sum_rule_chisp(usp_max_h, n, U)
 
         # Yury added a while loop to select Uspmin on the "right" side of the functions' crossing for brentq.
-        while self.mesh.trace('B', self.calc_chisp(usp_min)).real - self.calc_sum_rule_chisp(usp_min) > 0:
+        while self.mesh.trace('B', self.calc_chisp(usp_min)).real - self.calc_sum_rule_chisp(usp_min, n, U) > 0:
              usp_min = gamma * usp_min
              if usp_min < 0.05 * usp_max_h:
                 usp_min = 1e-6
@@ -211,8 +213,8 @@ class TpscPlus:
         if usp_max_h < usp_min:
             usp_min = 1e-6
 
-        if usp_braketed and self.mesh.trace('B', self.calc_chisp(usp_min)).real - self.calc_sum_rule_chisp(usp_min) < 0:
-            self.Usp = brentq(lambda m: self.mesh.trace('B', self.calc_chisp(m)).real - self.calc_sum_rule_chisp(m), usp_min, usp_max_h, disp=True)
+        if usp_braketed and self.mesh.trace('B', self.calc_chisp(usp_min)).real - self.calc_sum_rule_chisp(usp_min, n, U) < 0:
+            self.Usp = brentq(lambda m: self.mesh.trace('B', self.calc_chisp(m)).real - self.calc_sum_rule_chisp(m, n, U), usp_min, usp_max_h, disp=True)
         else:
             usp_braketed = False
             self.Usp = usp_max_h * gamma
@@ -256,11 +258,6 @@ class TpscPlus:
     @property
     def dispersion(self):
         return self.tpsc_obj.dispersion
-
-
-    @property
-    def n(self):
-        return self.tpsc_obj.n
 
 
     @property
@@ -308,11 +305,11 @@ class TpscPlus:
         self.tpsc_obj.docc = value
 
 
-    def calc_sum_rule_chisp(self, usp: float):
+    def calc_sum_rule_chisp(self, usp: float, n: float, U: float):
         """
             TODO Documentation
         """
-        return self.tpsc_obj.calc_sum_rule_chisp(usp)
+        return self.tpsc_obj.calc_sum_rule_chisp(usp, n, U)
 
 
     def calc_chisp(self, usp: float):
@@ -320,3 +317,8 @@ class TpscPlus:
             TODO Documentation
         """
         return self.tpsc_obj.calc_chisp(usp)
+
+
+    @property
+    def logger(self):
+        return self.tpsc_obj.logger
