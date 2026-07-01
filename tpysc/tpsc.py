@@ -63,7 +63,9 @@ class Tpsc:
         self.trace_chi1 = self.mesh.trace('B', self.chi1)
 
         # Calculate Usp and Uch from the TPSC ansatz.
+        self.logger.info("Computing irreducible spin vertex Usp...")
         self.Usp = self.calc_usp(n, U)
+        self.logger.info("Computing irreducible charge vertex Uch...")
         self.Uch = self.calc_uch(n, U)
 
         # Calculate the spin and charge susceptibilities.
@@ -250,6 +252,7 @@ class Tpsc:
 
         :meta private:
         """
+        self.logger.info("Computing self-energy...")
         # Get V(iqn,q)
         V = U / 8. * (3.*self.Usp*(self.chisp)+self.Uch*(self.chich))
 
@@ -308,11 +311,11 @@ class Tpsc:
         self.logger.addHandler(handler)
 
         # Calculations
-        self.logger.info('Start of TPSC calculations.')
+        self.logger.info(f'Start of TPSC calculations (n={n:.4f}, U={U:.4f}, T={self.mesh.T:.4f})')
         self.calc_first_level_approx(n, U)
         self.calc_second_level_approx(n, U)
         self.check_self_consistency(n, U)
-        self.logger.info('End of TPSC calculations')
+        self.logger.info('End of TPSC calculations.')
 
         # Prepare output
         self.main_results = {
