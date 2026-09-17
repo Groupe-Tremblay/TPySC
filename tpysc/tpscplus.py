@@ -76,7 +76,7 @@ class TpscPlus:
             # Calculate Usp and Uch from the TPSC ansatz.
             self.tpsc_obj.calc_usp() # XXX This might have to be changed
 
-        self.tpsc_obj.calc_uch(n, U)
+        self.tpsc_obj.Uch = self.tpsc_obj.calc_uch(n, U)
 
         # Calculate the spin and charge susceptibilities.
         self.tpsc_obj.chisp = self.tpsc_obj.calc_chisp(self.Usp)
@@ -107,7 +107,7 @@ class TpscPlus:
 
             # Calculate Usp and Uch from the TPSC ansatz.
             self.calc_usp(n, U)
-            self.tpsc_obj.calc_uch(n, U)
+            self.tpsc_obj.Uch = self.tpsc_obj.calc_uch(n, U)
 
             # Calculate the spin and charge susceptibilities.
             self.tpsc_obj.chisp = self.tpsc_obj.calc_chisp(self.Usp)
