@@ -32,6 +32,6 @@ solving:
     mesh = tpysc.Mesh2D(T=0.1, nk1=64, wmax=8, IR_tol=1e-12)
     dispersion = tpysc.dispersions.calcDispersion2DSquare(mesh, t=1, tp=1, tpp=0)
     solver = tpysc.Tpsc(mesh, dispersion)
-    results = sovler.solve(n=1, U=2.0)
+    results = solver.solve(n=1, U=2.0)
 
 See the :doc:`user_guide` to learn more about the Python interface.
