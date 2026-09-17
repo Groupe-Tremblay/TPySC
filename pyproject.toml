@@ -35,6 +35,3 @@ dependencies = [
 [project.optional-dependencies]
 docs = ["sphinx", "sphinx-rtd-theme"]
 tests = ["pytest"]
-
-[project.scripts]
-TPSC = "TPSC.CLI_scripts:TPSC_cli"

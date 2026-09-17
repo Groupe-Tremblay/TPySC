@@ -44,13 +44,21 @@ You can access the documentation in your browser by opening ``docs/build/html/in
 
 The `examples/` directory contains some examples for you to experiment with and get familiar with different use cases.
 
-The quickest way to start doing calculations using TPSC is to call the `TPSC` executable from the command line and provide input parameters in a JSON `para.json` file (see the `examples` directory):
+A calculation is set up by building a mesh, computing a dispersion on it, and
+solving:
 
-```bash
-TPSC para.json
+```python
+import tpysc
+import tpysc.dispersions
+
+mesh = tpysc.Mesh2D(T=0.1, nk1=64, wmax=8, IR_tol=1e-12)
+dispersion = tpysc.dispersions.calcDispersion2DSquare(mesh, t=1, tp=1, tpp=0)
+solver = tpysc.Tpsc(mesh, dispersion)
+results = solver.solve(n=1, U=2.0)
 ```
 
-TPSC could also be use in Python scripts for a finner control over input parameters or to post-process the results of TPSC calculations such as plotting observables.
+The returned dictionary can then be post-processed in the same script, for
+instance to plot observables.
 
 ## Tests
 
