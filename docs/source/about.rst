@@ -45,10 +45,9 @@ our community and should be supported.
 License
 =======
 
-TPSC is published under the `GNU General Public License, version 3
-<http://www.gnu.org/licenses/gpl.html>`_.
-
-Note that it *implies* that applications using TPSC must also be GPL.
+TPSC is published under the `MIT License
+<https://opensource.org/license/mit>`_. See the ``LICENSE`` file distributed
+with the source for the full text.
 
 Disclaimer
 ==========
