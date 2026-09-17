@@ -10,5 +10,5 @@ TPSC
 
 TPSC calculation are handled by the TPSC class.
 
-.. autoclass:: TPSC.TPSC
+.. autoclass:: tpysc.Tpsc
     :members:

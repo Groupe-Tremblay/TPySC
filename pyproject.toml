@@ -25,6 +25,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
+    "h5py",
     "matplotlib",
     "numpy",
     "scipy",
@@ -34,6 +35,3 @@ dependencies = [
 [project.optional-dependencies]
 docs = ["sphinx", "sphinx-rtd-theme"]
 tests = ["pytest"]
-
-[project.scripts]
-TPSC = "TPSC.CLI_scripts:TPSC_cli"
