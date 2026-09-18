@@ -9,20 +9,73 @@ from scipy.optimize import brentq
 
 class Tpsc:
     """
-    Set up a TPSC calculation.
+    Set up and run a Two-Particle Self-Consistent (TPSC) calculation.
 
-    The calculation is performed using the :meth:`run` method.
+    The calculation is performed using the :meth:`solve` method, which runs the
+    first and second levels of approximation and checks self-consistency between
+    one- and two-particle quantities.
 
-    :param mesh: Two-dimensional momentum/frequency mesh used for the calculation.
-    :type mesh: Mesh2D
-    :param dispersion: Array containing the dispersion values defined on the mesh.
-    :type dispersion: numpy.ndarray
+    :ivar mesh: Two-dimensional momentum/frequency mesh used for the calculation.
+    :vartype mesh: Mesh2D
+    :ivar dispersion: Array containing the dispersion values defined on the mesh.
+    :vartype dispersion: numpy.ndarray
+    :ivar g1: Green's function at the first level of approximation, G1(k, iwn).
+        ``None`` until :meth:`calc_g1` has been called.
+    :vartype g1: numpy.ndarray or None
+    :ivar g1_tau_r: G1(r, tau), the first-level Green's function transformed to
+        direct (real space, imaginary time) space. ``None`` until :meth:`calc_g1`
+        has been called.
+    :vartype g1_tau_r: numpy.ndarray or None
+    :ivar g1_tau_mr: G1(-r, tau), the first-level Green's function transformed to
+        direct space with the real-space coordinate mirrored. ``None`` until
+        :meth:`calc_g1` has been called.
+    :vartype g1_tau_mr: numpy.ndarray or None
+    :ivar mu1: Chemical potential at the first level of approximation. ``None``
+        until :meth:`calc_g1` has been called.
+    :vartype mu1: float or None
+    :ivar chi1: Irreducible susceptibility chi1(q, iqn). ``None`` until
+        :meth:`calc_chi1` has been called.
+    :vartype chi1: numpy.ndarray or None
+    :ivar Usp: Irreducible spin vertex. Set to -1.0 as a default value until
+        :meth:`calc_usp` has been called.
+    :vartype Usp: float
+    :ivar docc: Double occupancy. Set to -1.0 as a default value until
+        :meth:`calc_double_occupancy` has been called.
+    :vartype docc: float
+    :ivar Uch: Irreducible charge vertex. Set to -1.0 as a default value until
+        :meth:`calc_uch` has been called.
+    :vartype Uch: float
+    :ivar g2: Green's function at the second level of approximation, G2(k, iwn).
+        ``None`` until :meth:`calc_second_level_approx` has been called.
+    :vartype g2: numpy.ndarray or None
+    :ivar mu2: Chemical potential at the second level of approximation. ``None``
+        until :meth:`calc_second_level_approx` has been called.
+    :vartype mu2: float or None
+    :ivar self_energy: Second-level (TPSC) self-energy, Sigma(k, iwn), excluding
+        the Hartree term. ``None`` until :meth:`calc_second_level_approx` has
+        been called.
+    :vartype self_energy: numpy.ndarray or None
+    :ivar main_results: Dictionary summarizing the results of the TPSC
+        calculation, populated by :meth:`solve`.
+    :vartype main_results: dict
+    :ivar trace_self_g1: Trace of the product of the self-energy with G1,
+        Tr[Sigma * G1]. ``None`` until :meth:`check_self_consistency` has been
+        called.
+    :vartype trace_self_g1: complex or None
     """
 
     def __init__(self,
                  mesh: Mesh2D,
                  dispersion: np.ndarray,
                  ):
+        """
+        Initialize a TPSC calculation.
+
+        :param mesh: Two-dimensional momentum/frequency mesh used for the calculation.
+        :type mesh: Mesh2D
+        :param dispersion: Array containing the dispersion values defined on the mesh.
+        :type dispersion: numpy.ndarray
+        """
 
         self.mesh = mesh
         self.dispersion = dispersion
@@ -66,6 +119,11 @@ class Tpsc:
         Do the first level of approximation of TPSC.
         This calculates chi1, and then obtains chisp and chich from the sum rules and the TPSC ansatz.
 
+        :param n: Electron filling (density per site).
+        :type n: float
+        :param U: On-site Hubbard interaction strength.
+        :type U: float
+
         :meta private:
         """
         # Calculate the Green function G1 at the first level of approximation of TPSC.
@@ -91,7 +149,14 @@ class Tpsc:
 
     def calc_g1(self, n: float) -> None:
         """
-        TODO DOCUMENTATION
+        Compute the first-level Green's function G1 and its real-space transforms.
+
+        Finds the chemical potential ``mu1`` that yields the target density ``n`` by
+        root-finding on the non-interacting density, then computes G1(k, iwn) and
+        its Fourier transforms to direct space, G1(r, tau) and G1(-r, tau).
+
+        :param n: Electron filling (density per site).
+        :type n: float
         """
 
         # Compute mu^(1)
@@ -122,6 +187,13 @@ class Tpsc:
         """
         Function to compute Usp from chi1 and the sum rule.
 
+        :param n: Electron filling (density per site).
+        :type n: float
+        :param U: On-site Hubbard interaction strength.
+        :type U: float
+        :return: The irreducible spin vertex Usp solving the spin susceptibility sum rule.
+        :rtype: float
+
         :meta private:
         """
         # Bounds on the value of Usp
@@ -140,6 +212,17 @@ class Tpsc:
         Function to compute Uch from chi1 and the sum rule.
         Note: calc_usp has to be called before this function.
 
+        :param n: Electron filling (density per site).
+        :type n: float
+        :param U: On-site Hubbard interaction strength.
+        :type U: float
+        :param Uchmin: Lower bound of the search interval for Uch. Defaults to 0.
+        :type Uchmin: float
+        :param Uchmax: Upper bound of the search interval for Uch. Defaults to 100.
+        :type Uchmax: float
+        :return: The irreducible charge vertex Uch solving the charge susceptibility sum rule.
+        :rtype: float
+
         :meta private:
         """
         # Calculate Uch
@@ -152,6 +235,11 @@ class Tpsc:
     def calc_chisp(self, usp):
         """
         Computes chisp(q) = chi1(q)/(1 - Usp/2 * chi1(q)).
+
+        :param usp: The irreducible spin vertex.
+        :type usp: float
+        :return: The spin susceptibility chisp(q, iqn).
+        :rtype: numpy.ndarray
         """
         return  self.chi1 / (1 - 0.5 * usp * self.chi1)
 
@@ -159,6 +247,11 @@ class Tpsc:
     def calc_chich(self, uch):
         """
         Computes chich(q) = chi1(q)/(1 + Uch/2 * chi1(q)).
+
+        :param uch: The irreducible charge vertex.
+        :type uch: float
+        :return: The charge susceptibility chich(q, iqn).
+        :rtype: numpy.ndarray
         """
         return  self.chi1 / (1 + 0.5 * uch * self.chi1)
 
@@ -170,6 +263,13 @@ class Tpsc:
         The TPSC ansatz we use here satisfies the particle-hole symmetry with:
         n<1: Usp = U<n_up n_dn>/(<n_up><n_dn>)
         n>1: Usp = U<(1-n_up)(1-n_dn)>/(<(1-n_up)><(1-n_dn)>)
+
+        :param n: Electron filling (density per site).
+        :type n: float
+        :param U: On-site Hubbard interaction strength.
+        :type U: float
+        :return: The double occupancy <n_up n_dn>.
+        :rtype: float
 
         :meta private:
         """
@@ -190,6 +290,12 @@ class Tpsc:
 
         :param Usp: The irreducible spin vertex.
         :type Usp: float
+        :param n: Electron filling (density per site).
+        :type n: float
+        :param U: On-site Hubbard interaction strength.
+        :type U: float
+        :return: The value of the spin susceptibility sum rule evaluated at Usp.
+        :rtype: float
 
         :meta private:
         """
@@ -210,6 +316,12 @@ class Tpsc:
 
         :param Usp: The irreducible spin vertex.
         :type Usp: float
+        :param n: Electron filling (density per site).
+        :type n: float
+        :param U: On-site Hubbard interaction strength.
+        :type U: float
+        :return: The value of the charge susceptibility sum rule evaluated at Usp.
+        :rtype: float
 
         :meta private:
         """
@@ -263,6 +375,11 @@ class Tpsc:
         The TPSC self-energy is: U/8 sum_q(3chi_sp(q)U_sp + chi_ch(q)U_ch)G1(k+q).
         We define V(q) =  U/8(3chi_sp(q)U_sp + chi_ch(q)U_ch) and compute 1/2(V(r)*G(-r)+V(-r)G(r)).
 
+        :param n: Electron filling (density per site).
+        :type n: float
+        :param U: On-site Hubbard interaction strength.
+        :type U: float
+
         :meta private:
         """
         self.logger.info("Computing self-energy...")
@@ -297,6 +414,11 @@ class Tpsc:
         but it is not with the Green's function G2. The discrepancy between the exact result and the trace with G2 is
         a check of the validity of the TPSC calculation.
 
+        :param n: Electron filling (density per site).
+        :type n: float
+        :param U: On-site Hubbard interaction strength.
+        :type U: float
+
         :meta private:
         """
         # Calculate the traces
@@ -311,6 +433,10 @@ class Tpsc:
         """
         Run the TPSC method
 
+        :param n: Electron filling (density per site).
+        :type n: float
+        :param U: On-site Hubbard interaction strength.
+        :type U: float
         :return: A dictionary containing main TPSC output
         :rtype: dict
         """
@@ -339,6 +465,12 @@ class Tpsc:
 
 
     def __str__(self) -> str:
+        """
+        Return a human-readable summary of the main TPSC results.
+
+        :return: A formatted multi-line string listing each entry of :attr:`main_results`.
+        :rtype: str
+        """
         if self.main_results is {}:
             return "TPSC was not run, please run the TPSC before printing the results."
 
