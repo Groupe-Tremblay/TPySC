@@ -121,6 +121,8 @@ class Tpsc:
     def __init_logger__(self,):
         """
         TODO DOCSTRING
+
+        :meta private:
         """
         self.logger.setLevel(logging.DEBUG)
         # Handler
@@ -190,8 +192,6 @@ class Tpsc:
         """
         Function to calculate chi1(q,iqn).
         This also calculates the trace of chi1(q,iqn) as a consistency check.
-
-        :meta private:
         """
         # Calculate chi1(tau,r)
         self.chi1 = 2. * self.g1_tau_r * self.g1_tau_mr[::-1, :]
@@ -211,8 +211,6 @@ class Tpsc:
         :type U: float
         :return: The irreducible spin vertex Usp solving the spin susceptibility sum rule.
         :rtype: float
-
-        :meta private:
         """
         # Bounds on the value of Usp
         Uspmin = 0.
@@ -240,8 +238,6 @@ class Tpsc:
         :type Uchmax: float
         :return: The irreducible charge vertex Uch solving the charge susceptibility sum rule.
         :rtype: float
-
-        :meta private:
         """
         # Calculate Uch
         return brentq(lambda u: self.mesh.trace('B', self.calc_chich(u)).real-self.calc_sum_rule_chich(self.Usp, n, U),
@@ -288,8 +284,6 @@ class Tpsc:
         :type U: float
         :return: The double occupancy <n_up n_dn>.
         :rtype: float
-
-        :meta private:
         """
         if (n < 1):
             return self.Usp /U * n * n / 4
@@ -354,8 +348,6 @@ class Tpsc:
         Compute the spin correlation length from commensurate spin fluctuations at Q=(pi,pi).
         This calculates the width at half maximum of the spin susceptibility ONLY if its maximal value is at (pi,pi).
         If the spin susceptibility maximum is not at (pi,pi) (incommensurate spin fluctuations), this function returns -1.
-
-        :meta private:
         """
         # Set the default value
         qx = int(self.mesh.nk1/2)
