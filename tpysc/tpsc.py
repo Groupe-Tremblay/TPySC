@@ -94,7 +94,7 @@ class Tpsc:
         self.self_energy = None
         self.main_results = {}
         self.trace_self_g1 = None
-        self.trace_self_g1 = None
+        self.trace_self_g2 = None
 
         # Logging
         self.logger = logging.getLogger("TPSC")
@@ -471,7 +471,7 @@ class Tpsc:
         :return: A formatted multi-line string listing each entry of :attr:`main_results`.
         :rtype: str
         """
-        if self.main_results is {}:
+        if not self.main_results:
             return "TPSC was not run, please run the TPSC before printing the results."
 
         string = ""
@@ -488,7 +488,7 @@ class Tpsc:
         :param filename: The name of the output JSON file
         :type filename: str
         """
-        if self.main_results is {}:
+        if not self.main_results:
             print("TPSC was not run, please run the TPSC before printing the results.")
             return
         out_results = {
