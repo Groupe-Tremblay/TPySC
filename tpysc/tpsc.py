@@ -36,15 +36,24 @@ class Tpsc:
     :ivar chi1: Irreducible susceptibility chi1(q, iqn). ``None`` until
         :meth:`calc_chi1` has been called.
     :vartype chi1: numpy.ndarray or None
+    :ivar trace_chi1: Trace of chi1(q, iqn), computed as a consistency check.
+        Not set until :meth:`calc_first_level_approx` has been called.
+    :vartype trace_chi1: complex
     :ivar Usp: Irreducible spin vertex. Set to -1.0 as a default value until
         :meth:`calc_usp` has been called.
     :vartype Usp: float
+    :ivar chisp: Spin susceptibility chisp(q, iqn). Not set until
+        :meth:`calc_first_level_approx` has been called.
+    :vartype chisp: numpy.ndarray
     :ivar docc: Double occupancy. Set to -1.0 as a default value until
         :meth:`calc_double_occupancy` has been called.
     :vartype docc: float
     :ivar Uch: Irreducible charge vertex. Set to -1.0 as a default value until
         :meth:`calc_uch` has been called.
     :vartype Uch: float
+    :ivar chich: Charge susceptibility chich(q, iqn). Not set until
+        :meth:`calc_first_level_approx` has been called.
+    :vartype chich: numpy.ndarray
     :ivar g2: Green's function at the second level of approximation, G2(k, iwn).
         ``None`` until :meth:`calc_second_level_approx` has been called.
     :vartype g2: numpy.ndarray or None
@@ -62,6 +71,15 @@ class Tpsc:
         Tr[Sigma * G1]. ``None`` until :meth:`check_self_consistency` has been
         called.
     :vartype trace_self_g1: complex or None
+    :ivar trace_self_g2: Trace of the product of the self-energy with G2,
+        Tr[Sigma * G2]. ``None`` until :meth:`check_self_consistency` has been
+        called.
+    :vartype trace_self_g2: complex or None
+    :ivar exact_trace_self_g: Expected value of Tr[Sigma * G1] from the exact
+        sum rule, U * docc - U * n^2 / 4, used by :meth:`check_self_consistency`
+        as a self-consistency check. Not set until :meth:`check_self_consistency`
+        has been called.
+    :vartype exact_trace_self_g: float
     """
 
     def __init__(self,
