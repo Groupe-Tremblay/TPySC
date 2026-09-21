@@ -10,7 +10,7 @@ TPSC will be soon available on PyPi. For the time being, it can be installed by 
 
 .. code-block:: bash
 
-    git clone https://github.com/amstremblay/TPSC
+    git clone https://github.com/Groupe-Tremblay/TPySC.git
     cd TPSC
     pip install .
 
