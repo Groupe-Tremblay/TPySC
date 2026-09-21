@@ -17,7 +17,7 @@ author = 'André-Marie Tremblay, Camille Lahaie, Chloé-Aminata Gauvin, Jérôme
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx.ext.autodoc']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo']
 
 autodoc_mock_imports = ["scipy", "numpy", "sparse_ir", "matplotlib", "h5py"]
 
