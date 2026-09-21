@@ -96,8 +96,10 @@ class Mesh2D:
             elif isinstance(n_array, list):
                 n_array = np.array(n_array, dtype=int)
             else:
-                print("ERROR: Wrong type of n_array passed as argument. Leaving...")
-                exit(1)
+                raise TypeError(
+                    f"n_array must be an int, float, list, or np.ndarray, "
+                    f"got {type(n_array).__name__}."
+                )
 
         # We calculate the reduced wn's for the given statistics
         if statistics.lower() == 'f':
@@ -107,8 +109,7 @@ class Mesh2D:
             wn_array = 2*n_array
             basis_l = self.IR_basis_set.basis_b
         else:
-            print("ERROR: Wrong statistics passed as argument")
-            exit(1)
+            raise ValueError(f"statistics must be 'f' or 'b', got {statistics!r}.")
 
         # We calculate obj_l with the correct sampling object
         smpl_wn = self.smpl_obj(statistics=statistics)[1]
@@ -163,6 +164,8 @@ class Mesh2D:
         elif statistic.lower() == 'b':
             trace_l = self.IR_basis_set.smpl_wn_b.fit(trace)
             return self.IR_basis_set.basis_b.u(tau_value) @ trace_l
+        else:
+            raise ValueError(f"statistic must be 'f' or 'b', got {statistic!r}.")
 
 
     def get_ind_kpt(self, kx, ky):
@@ -225,7 +228,7 @@ class Mesh2D:
         """
             TODO Docstring
         """
-        self.__save_hdf__(target_file, data_label, io_mode)
+        self.__save_hdf__(target_file, data_label, obj, io_mode)
 
 
     def __save_hdf__(self, target_file: str, data_label: str, obj: np.ndarray, io_mode: str) -> None:
