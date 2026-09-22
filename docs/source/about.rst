@@ -5,13 +5,13 @@ About TPSC
 Authors & contributors
 ======================
 
-The TPSC library has been orginally authored by:
+The TPSC library has been originally authored by:
 
  Chloé Gauvin-Ndiaye (Université de Sherbrooke)
 
 It is currently maintained by:
 
- Nicolas Martin  (Université de Sherbrooke)
+ Nicolas Martin (Université de Sherbrooke)
 
 It was supported by NSERC under Grant Number RGPIN-2019-05312 (A.-M.S.T.), by scholarships from NSERC and by the Canada First Research  Excellence Fund.
 
@@ -23,24 +23,21 @@ Citation
 ========
 
 TPSC is a part of our scientific work and we kindly request that
-projects using it include a citation to the following link. In
-order to help you, we provide a BibTeX entry [#triqs]_.
+projects using it include a citation to the TPSC method [#TPSC]_. In
+order to help you, we provide a BibTeX entry (:download:`bibtex file <tpsc.bib>`).
 
 This library is based on the `sparse-IR
-<https://spm-lab.github.io/sparse-ir-tutorial/index.html>`_, numpy, scipy and
+<https://spm-lab.github.io/sparse-ir-tutorial/index.html>`_ [#sparse-ir1]_ [#sparse-ir2]_, numpy, scipy and
 xprec software
 
-.. [#triqs] `O. Parcollet, M. Ferrero, T. Ayral, H. Hafermann, I. Krivenko, L. Messio, and P. Seth, Comp. Phys. Comm. 196, 398-415 (2015) <http://dx.doi.org/10.1016/j.cpc.2015.04.023>`_ (:download:`bibtex file <triqs.bib>`)
+.. [#TPSC] `Y. M. Vilk and A.-M. S. Tremblay, J. Phys. I France 7, 1309-1368 (1997) <https://arxiv.org/abs/cond-mat/9702188>`_
 
-
-.. [#sparse-ir1]  (:download:`bibtex file <tpsc.bib>`)
-.. [#sparse-ir2] 
+.. [#sparse-ir1] `H. Shinaoka, J. Otsuki, M. Ohzeki, and K. Yoshimi, Phys. Rev. B 96, 035147 (2017) <https://doi.org/10.1103/PhysRevB.96.035147>`_
+.. [#sparse-ir2] `J. Li, M. Wallerberger, N. Chikano, C.-N. Yeh, E. Gull, and H. Shinaoka, Phys. Rev. B 101, 035144 (2020) <https://doi.org/10.1103/PhysRevB.101.035144>`_ and `M. Wallerberger et al., SoftwareX 21, 101266 (2023) <https://doi.org/10.1016/j.softx.2023.101266>`_
 
 If you find TPSC useful, giving proper reference and citation is indeed a
 simple way to help convincing funding sources that such projects are useful for
 our community and should be supported.
-
-.. [#TPSC]  (:download:`bibtex file <tpsc.bib>`)
 
 License
 =======
@@ -62,4 +59,5 @@ publications.
 Logo files
 ==========
 
-This is the official TPSC logo:
+.. todo::
+   Add the official TPSC logo here once one is available.
