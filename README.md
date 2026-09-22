@@ -49,7 +49,6 @@ solving:
 
 ```python
 import tpysc
-import tpysc.dispersions
 
 mesh = tpysc.Mesh2D(T=0.1, nk1=64, wmax=8, IR_tol=1e-12)
 dispersion = tpysc.dispersions.calcDispersion2DSquare(mesh, t=1, tp=1, tpp=0)
