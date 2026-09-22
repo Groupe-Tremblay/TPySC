@@ -303,7 +303,7 @@ class Mesh2D:
 
         .. math::
 
-            \\mathrm{trace}(0^\\pm) = \\frac{T}{N}\\sum_{\\mathbf{k}}\\sum_{n}
+            \\mathrm{tr}\mathrm{O} = \\frac{T}{N}\\sum_{\\mathbf{k}}\\sum_{n}
                 O(\\mathbf{k}, i\\omega_n)\\, e^{i\\omega_n 0^\\pm}
 
         :param statistic: Statistic type, 'f' for fermionic or 'b' for
