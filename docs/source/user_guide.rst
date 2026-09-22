@@ -21,3 +21,11 @@ by the Mesh2D class.
 
 .. autoclass:: tpysc.Mesh2D
     :members:
+
+Dispersions
+-----------
+
+Tight-binding dispersions to evaluate on a Mesh2D's k-grid.
+
+.. automodule:: tpysc.dispersions
+    :members:
