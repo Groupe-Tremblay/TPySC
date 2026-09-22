@@ -1,5 +1,4 @@
 import tpysc
-import tpysc.dispersions # TODO Fix this import
 import json
 import numpy as np
 

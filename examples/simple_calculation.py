@@ -1,7 +1,6 @@
 import logging
 
 import tpysc
-import tpysc.dispersions
 
 # Enable console logging to see the progress of the calculation.
 tpysc.enable_console_logging(level=logging.INFO)
