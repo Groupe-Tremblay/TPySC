@@ -253,19 +253,27 @@ class Tpsc:
         return  self.chi1 / (1 + 0.5 * uch * self.chi1)
 
 
-    def calc_double_occupancy(self, n: float, U: float):
+    def calc_double_occupancy(self, n: float, U: float) -> float:
         """
-        Function to compute the double occupancy.
-        Note: the function calc_usp has to be called before this one
-        The TPSC ansatz we use here satisfies the particle-hole symmetry with:
-        n<1: Usp = U<n_up n_dn>/(<n_up><n_dn>)
-        n>1: Usp = U<(1-n_up)(1-n_dn)>/(<(1-n_up)><(1-n_dn)>)
+        Compute the double occupancy :math:`\\langle n_\\uparrow n_\\downarrow \\rangle`.
+
+        :meth:`calc_usp` must be called before this method. The TPSC ansatz
+        used here satisfies particle-hole symmetry, giving a piecewise
+        expression in terms of the irreducible spin vertex ``Usp``:
+
+        .. math::
+
+            \\langle n_\\uparrow n_\\downarrow \\rangle =
+            \\begin{cases}
+                \\dfrac{U_\\mathrm{sp}}{4U}\\, n^2 & \\text{if} ~ n < 1 \\\\
+                \\dfrac{U_\\mathrm{sp}}{4U}\\, (2-n)^2 - 1 + n & \\text{if} ~ n \\geq 1
+            \\end{cases}
 
         :param n: Electron filling (density per site).
         :type n: float
         :param U: On-site Hubbard interaction strength.
         :type U: float
-        :return: The double occupancy <n_up n_dn>.
+        :return: The double occupancy.
         :rtype: float
         """
         if (n < 1):
