@@ -7,6 +7,8 @@ import logging
 
 from scipy.optimize import brentq
 
+logger = logging.getLogger(__name__)
+
 class Tpsc:
     """
     Set up and run a Two-Particle Self-Consistent (TPSC) calculation.
@@ -114,25 +116,6 @@ class Tpsc:
         self.trace_self_g1 = None
         self.trace_self_g2 = None
 
-        # Logging
-        self.logger = logging.getLogger("TPSC")
-
-
-    def __init_logger__(self,):
-        """
-        TODO DOCSTRING
-
-        :meta private:
-        """
-        self.logger.setLevel(logging.DEBUG)
-        # Handler
-        handler = logging.StreamHandler()
-        handler.setLevel(logging.DEBUG)
-        # Formatter
-        formatter = logging.Formatter('%(asctime)s.%(msecs)03d - %(name)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
-
 
     def calc_first_level_approx(self, n: float, U: float):
         """
@@ -154,9 +137,9 @@ class Tpsc:
         self.trace_chi1 = self.mesh.trace('B', self.chi1)
 
         # Calculate Usp and Uch from the TPSC ansatz.
-        self.logger.info("Computing irreducible spin vertex Usp...")
+        logger.info("Computing irreducible spin vertex Usp...")
         self.Usp = self.calc_usp(n, U)
-        self.logger.info("Computing irreducible charge vertex Uch...")
+        logger.info("Computing irreducible charge vertex Uch...")
         self.Uch = self.calc_uch(n, U)
 
         # Calculate the spin and charge susceptibilities.
@@ -392,7 +375,7 @@ class Tpsc:
 
         :meta private:
         """
-        self.logger.info("Computing self-energy...")
+        logger.info("Computing self-energy...")
         # Get V(iqn,q)
         V = U / 8. * (3.*self.Usp*(self.chisp)+self.Uch*(self.chich))
 
@@ -450,14 +433,14 @@ class Tpsc:
         :return: A dictionary containing main TPSC output
         :rtype: dict
         """
-        self.__init_logger__()
-
-        # Calculations
-        self.logger.info(f'Start of TPSC calculations (n={n:.4f}, U={U:.4f}, T={self.mesh.T:.4f})')
+        logger.info(
+            "Start of TPSC calculations (n=%.4f, U=%.4f, T=%.4f)",
+            n, U, self.mesh.T,
+        )
         self.calc_first_level_approx(n, U)
         self.calc_second_level_approx(n, U)
         self.check_self_consistency(n, U)
-        self.logger.info('End of TPSC calculations.')
+        logger.info("End of TPSC calculations.")
 
         # Prepare output
         self.main_results = {
@@ -499,7 +482,7 @@ class Tpsc:
         :type filename: str
         """
         if not self.main_results:
-            print("TPSC was not run, please run the TPSC before printing the results.")
+            logger.warning("TPSC was not run; no results to write to %s.", filename)
             return
         out_results = {
             "Usp" : self.Usp,

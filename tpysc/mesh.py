@@ -2,6 +2,9 @@ import numpy as np
 import sparse_ir
 from scipy.interpolate import BarycentricInterpolator
 import h5py
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Mesh2D:
@@ -226,10 +229,12 @@ class Mesh2D:
             elif isinstance(n_array, list):
                 n_array = np.array(n_array, dtype=int)
             else:
-                raise TypeError(
+                msg = (
                     f"n_array must be an int, float, list, or np.ndarray, "
                     f"got {type(n_array).__name__}."
                 )
+                logger.error(msg)
+                raise TypeError(msg)
 
         # We calculate the reduced wn's for the given statistics
         if statistics.lower() == 'f':
@@ -239,7 +244,9 @@ class Mesh2D:
             wn_array = 2*n_array
             basis_l = self.IR_basis_set.basis_b
         else:
-            raise ValueError(f"statistics must be 'f' or 'b', got {statistics!r}.")
+            msg = f"statistics must be 'f' or 'b', got {statistics!r}."
+            logger.error(msg)
+            raise ValueError(msg)
 
         # We calculate obj_l with the correct sampling object
         smpl_wn = self.smpl_obj(statistics=statistics)[1]

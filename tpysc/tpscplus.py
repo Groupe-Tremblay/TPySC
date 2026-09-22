@@ -5,6 +5,8 @@ from .gf import calcGiwnk, calcNfromG, transform_g_to_direct_space
 from scipy.optimize import brentq
 import logging
 
+logger = logging.getLogger(__name__)
+
 class TpscPlus:
 
     def __init__(self,
@@ -43,8 +45,7 @@ class TpscPlus:
         """
         TODO Documentation
         """
-        self.tpsc_obj.__init_logger__()
-        self.logger.info("Start of TPSC+ calculations.")
+        logger.info("Start of TPSC+ calculations.")
 
         # First do a regular TPSC procedure.
         # Calculate the Green function G1 at the first level of approximation of TPSC.
@@ -54,11 +55,11 @@ class TpscPlus:
             self.tpsc_obj.calc_chi1()
             self.Usp = self.tpsc_obj.calc_usp(n, U)
         else:
-            self.logger.info("Self-energy already set.")
+            logger.info("Self-energy already set.")
 
             # Set the self-energy.
             if np.shape(self_energy)[0] < len(self.mesh.IR_basis_set.wn_f): # Check if len(selfE) < len(iwn).
-                self.logger.info("Casting self energy on new mesh.")
+                logger.info("Casting self energy on new mesh.")
 
                 diffshape = len(self.mesh.IR_basis_set.wn_f) - np.shape(self_energy)[0] # If so, gets the difference in lengths.
                 shape_of_mesh = (len(self.mesh.IR_basis_set.wn_f), self.mesh.nk1, self.mesh.nk2)
@@ -88,7 +89,7 @@ class TpscPlus:
         self.tpsc_obj.calc_second_level_approx(n, U)
 
         # Do the TPSC+ loop.
-        logging.info("Start of TPSC+ self-consistent loop...")
+        logger.info("Start of TPSC+ self-consistent loop...")
         for i in range(iter_max):
 
             if i > 0 and alpha > 0:
@@ -135,9 +136,14 @@ class TpscPlus:
                 break
 
         if self.converged:
-            logging.info("The TPSC+ calculation has converged after {} iterations.".format(i+1))
+            logger.info(
+                "The TPSC+ calculation has converged after %d iterations.", i + 1
+            )
         else:
-            logging.error("The TPSC+ calculation has not converged after {} iterations.".format(iter_max))
+            logger.error(
+                "The TPSC+ calculation has not converged after %d iterations.",
+                iter_max,
+            )
 
         # Update to last values of G^(2) and self-energy.
         self.g2 = self.tpsc_obj.g2
@@ -317,8 +323,3 @@ class TpscPlus:
             TODO Documentation
         """
         return self.tpsc_obj.calc_chisp(usp)
-
-
-    @property
-    def logger(self):
-        return self.tpsc_obj.logger
