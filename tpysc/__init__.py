@@ -1,4 +1,5 @@
 import logging
+import time
 
 from .mesh import Mesh2D
 from .tpsc import Tpsc
@@ -6,20 +7,6 @@ from .tpscplus import TpscPlus
 from .utils import pade
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
-
-
-class _CentisecondFormatter(logging.Formatter):
-    """
-    Formatter using two-digit centiseconds instead of three-digit
-    milliseconds, since %(msecs)d cannot be truncated directly in a format
-    string.
-
-    :meta private:
-    """
-
-    def format(self, record: logging.LogRecord) -> str:
-        record.centisecs = int(record.msecs / 10)
-        return super().format(record)
 
 
 def enable_console_logging(level: int = logging.INFO) -> None:
@@ -34,12 +21,16 @@ def enable_console_logging(level: int = logging.INFO) -> None:
 
     if not any(isinstance(h, logging.StreamHandler) for h in pkg_logger.handlers):
         handler = logging.StreamHandler()
-        handler.setFormatter(
-            _CentisecondFormatter(
-                "%(asctime)s.%(centisecs)02d - %(name)s - %(levelname)s: %(message)s",
-                datefmt="%Y-%m-%d %H:%M:%S",
-            )
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s: %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
         )
+        # centiseconds instead of the default 3-digit milliseconds
+        formatter.formatTime = lambda record, datefmt=None: (
+            f"{time.strftime(datefmt, time.localtime(record.created))}"
+            f".{int(record.msecs / 10):02d}"
+        )
+        handler.setFormatter(formatter)
         pkg_logger.addHandler(handler)
 
     pkg_logger.setLevel(level)
