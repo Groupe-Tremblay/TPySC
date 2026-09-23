@@ -5,19 +5,12 @@ About TPSC
 Authors & contributors
 ======================
 
-The TPSC library has been originally authored by:
+The TPSC library's contributors are:
 
- Chloé Gauvin-Ndiaye (Université de Sherbrooke)
-
-It is currently maintained by:
-
- Nicolas Martin (Université de Sherbrooke)
+ Jérôme Leblanc, Chloé-Aminata Gauvin-Ndiaye, Nicolas Martin, Camille Lahaie,
+ André-Marie Tremblay, Moise Rousseau (Université de Sherbrooke)
 
 It was supported by NSERC under Grant Number RGPIN-2019-05312 (A.-M.S.T.), by scholarships from NSERC and by the Canada First Research  Excellence Fund.
-
-Other developers include:
-
-Camille Lahaie, Jérôme Leblanc, Moïse Rousseau (Université de Sherbrooke)
 
 Citation
 ========

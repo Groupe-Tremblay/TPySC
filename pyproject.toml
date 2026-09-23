@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tpysc"
-version = "0.1.0"
+version = "0.2.0"
 authors = [
-    {name = "André-Marie Tremblay", email = "andre-marie.tremblay@usherbrooke.ca"},
-    {name = "Camille Lahaie", email = "camille.lahaie@usherbrooke.ca"},
-    {name = "Chloé-Aminata Gauvin-Ndiaye", email = "chloe-aminata.gauvin-ndiaye@usherbrooke.ca"},
     {name = "Jérôme Leblanc", email = "jerome.leblanc@usherbrooke.ca"},
-    {name = "Moise Rousseau", email = "moise.rousseau@usherbrooke.ca"},
-    {name = "Nicolas Martin", email = "nicolas.b.martin@usherbrooke.ca"}
+    {name = "Chloé-Aminata Gauvin-Ndiaye", email = "chloe-aminata.gauvin-ndiaye@usherbrooke.ca"},
+    {name = "Nicolas Martin", email = "nicolas.b.martin@usherbrooke.ca"},
+    {name = "Camille Lahaie", email = "camille.lahaie@usherbrooke.ca"},
+    {name = "André-Marie Tremblay", email = "andre-marie.tremblay@usherbrooke.ca"},
+    {name = "Moise Rousseau", email = "moise.rousseau@usherbrooke.ca"}
 ]
 description = "A Python library that allows the computation of Hubbard model related functions and quantities (such as the self-energy and Green's function) using the Two-Particle-Self-Consistent (TPSC) approach first described in Vick and Tremblay (1997). "
 readme = "README.md"
@@ -26,7 +26,6 @@ classifiers = [
 ]
 dependencies = [
     "h5py",
-    "matplotlib",
     "numpy",
     "scipy",
     "sparse_ir[xprec]",

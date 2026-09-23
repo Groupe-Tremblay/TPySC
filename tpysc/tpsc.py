@@ -1,6 +1,5 @@
 from .gf import calcGiwnk, calcNfromG, transform_g_to_direct_space
 from .mesh import Mesh2D
-import matplotlib.pyplot as plt
 import json
 import numpy as np
 import logging
