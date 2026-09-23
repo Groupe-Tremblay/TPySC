@@ -29,3 +29,12 @@ Tight-binding dispersions to evaluate on a Mesh2D's k-grid.
 
 .. automodule:: tpysc.dispersions
     :members:
+
+Green's functions
+------------------
+
+Fermionic Green's function utilities: building Matsubara Green's functions, extracting
+the density, and transforming to real space.
+
+.. automodule:: tpysc.gf
+    :members:
