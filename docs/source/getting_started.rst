@@ -15,11 +15,8 @@ TPSC will be soon available on PyPi. For the time being, it can be installed by 
     pip install .
 
 
-Use
----
-
-Python library
-##############
+Running a solver
+----------------
 
 A calculation is set up by building a mesh, computing a dispersion on it, and
 solving:
