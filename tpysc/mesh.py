@@ -51,7 +51,7 @@ class Mesh2D:
                  T: float,
                  wmax: float,
                  IR_tol: float = 1e-12
-                 ):
+                 ) -> None:
         """
         Build the k-grid and the intermediate representation basis for a 2D
         system at a given temperature.

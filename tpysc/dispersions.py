@@ -2,7 +2,7 @@ import numpy as np
 from .mesh import Mesh2D
 
 
-def calcDispersion2DSquare(mesh: Mesh2D, t=1., tp=0., tpp=0.):
+def calcDispersion2DSquare(mesh: Mesh2D, t=1., tp=0., tpp=0.) -> np.ndarray:
     """
     Compute the tight-binding dispersion for a 2D square lattice.
 

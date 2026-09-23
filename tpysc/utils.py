@@ -7,7 +7,7 @@ def pade(omega_n: list,
 			wmax: float,
 			nbr_w: int,
 			eta:float=0.001,
-			epsilon=1e-10):
+			epsilon=1e-10) -> tuple[np.ndarray, np.ndarray]:
 	"""
     Perform analytical continuation using Padé approximant via continued fractions.
 

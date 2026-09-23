@@ -4,7 +4,7 @@ from tpysc.mesh import Mesh2D
 import numpy as np
 
 
-def calcGiwnk(mesh: Mesh2D, z):
+def calcGiwnk(mesh: Mesh2D, z) -> "np.ndarray | complex":
     """
     Calculate a ferminonic Matsubara Green's function in the form 1/(iwn - z).
 
@@ -21,7 +21,7 @@ def calcGiwnk(mesh: Mesh2D, z):
     return 1 / (iwn[:, None, None] - z)
 
 
-def calcNfromG(mesh: Mesh2D, z):
+def calcNfromG(mesh: Mesh2D, z) -> "float | np.ndarray":
     """
     Calculate the density from the fermionic Green's function.
 

@@ -50,7 +50,7 @@ class TpscPlus:
     def __init__(self,
                  mesh: Mesh2D,
                  dispersion: np.ndarray,
-                 ):
+                 ) -> None:
         """
         Initialize a TPSC+ calculation.
 
@@ -234,7 +234,7 @@ class TpscPlus:
     def calc_usp(self,
                 n: float,
                 U: float,
-                gamma: float = 0.8):
+                gamma: float = 0.8) -> None:
         """
         Compute Usp for TPSC+ from chi2 and the sum rule.
 
@@ -310,7 +310,7 @@ class TpscPlus:
         self.delta = 1 - self.Usp / usp_crit
 
 
-    def calc_chi2(self):
+    def calc_chi2(self) -> None:
         """
         Compute the irreducible particle-hole response function chi2(q, iqn) from
         G1 and G2.
@@ -348,7 +348,7 @@ class TpscPlus:
 
     # --- Wrapper of the Tpsc class ---
     @property
-    def mesh(self):
+    def mesh(self) -> Mesh2D:
         """
         Two-dimensional momentum/frequency mesh used for the calculation, forwarded
         from :attr:`tpsc_obj`.
@@ -359,7 +359,7 @@ class TpscPlus:
 
 
     @property
-    def dispersion(self):
+    def dispersion(self) -> np.ndarray:
         """
         Array containing the dispersion values defined on the mesh, forwarded from
         :attr:`tpsc_obj`.
@@ -370,7 +370,7 @@ class TpscPlus:
 
 
     @property
-    def g1(self):
+    def g1(self) -> "np.ndarray | None":
         """
         First-level Green's function G1(k, iwn), forwarded from :attr:`tpsc_obj`.
 
@@ -380,7 +380,7 @@ class TpscPlus:
 
 
     @property
-    def chi2(self):
+    def chi2(self) -> "np.ndarray | None":
         """
         Irreducible particle-hole response function chi2(q, iqn) at the second
         level of TPSC+, computed by :meth:`calc_chi2`.
@@ -396,7 +396,7 @@ class TpscPlus:
 
 
     @chi2.setter
-    def chi2(self, value):
+    def chi2(self, value) -> None:
         """
         Set the irreducible particle-hole response function chi2(q, iqn).
 
@@ -410,7 +410,7 @@ class TpscPlus:
 
 
     @property
-    def mu1(self):
+    def mu1(self) -> "float | None":
         """
         Chemical potential at the first level of approximation, forwarded from
         :attr:`tpsc_obj`.
@@ -421,7 +421,7 @@ class TpscPlus:
 
 
     @property
-    def Usp(self):
+    def Usp(self) -> float:
         """
         Irreducible spin vertex, forwarded from :attr:`tpsc_obj`.
 
@@ -431,7 +431,7 @@ class TpscPlus:
 
 
     @Usp.setter
-    def Usp(self, value):
+    def Usp(self, value) -> None:
         """
         Set the irreducible spin vertex, forwarded to :attr:`tpsc_obj`.
 
@@ -442,7 +442,7 @@ class TpscPlus:
 
 
     @property
-    def Uch(self):
+    def Uch(self) -> float:
         """
         Irreducible charge vertex, forwarded from :attr:`tpsc_obj`.
 
@@ -452,7 +452,7 @@ class TpscPlus:
 
 
     @Uch.setter
-    def Uch(self, value):
+    def Uch(self, value) -> None:
         """
         Set the irreducible charge vertex, forwarded to :attr:`tpsc_obj`.
 
@@ -463,7 +463,7 @@ class TpscPlus:
 
 
     @property
-    def docc(self):
+    def docc(self) -> float:
         """
         Double occupancy, forwarded from :attr:`tpsc_obj`.
 
@@ -473,7 +473,7 @@ class TpscPlus:
 
 
     @docc.setter
-    def docc(self, value):
+    def docc(self, value) -> None:
         """
         Set the double occupancy, forwarded to :attr:`tpsc_obj`.
 
@@ -483,7 +483,7 @@ class TpscPlus:
         self.tpsc_obj.docc = value
 
 
-    def calc_sum_rule_chisp(self, usp: float, n: float, U: float):
+    def calc_sum_rule_chisp(self, usp: float, n: float, U: float) -> float:
         """
         Calculate the spin susceptibility sum rule for a specific Usp and U.
 
@@ -503,7 +503,7 @@ class TpscPlus:
         return self.tpsc_obj.calc_sum_rule_chisp(usp, n, U)
 
 
-    def calc_chisp(self, usp: float):
+    def calc_chisp(self, usp: float) -> np.ndarray:
         """
         Compute chisp(q) = chi2(q) / (1 - Usp/2 * chi2(q)).
 

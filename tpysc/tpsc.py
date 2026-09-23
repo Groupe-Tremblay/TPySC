@@ -87,7 +87,7 @@ class Tpsc:
     def __init__(self,
                  mesh: Mesh2D,
                  dispersion: np.ndarray,
-                 ):
+                 ) -> None:
         """
         Initialize a TPSC calculation.
 
@@ -117,7 +117,7 @@ class Tpsc:
         self.trace_self_g2 = None
 
 
-    def calc_first_level_approx(self, n: float, U: float):
+    def calc_first_level_approx(self, n: float, U: float) -> None:
         """
         Do the first level of approximation of TPSC.
         This calculates chi1, and then obtains chisp and chich from the sum rules and the TPSC ansatz.
@@ -171,7 +171,7 @@ class Tpsc:
         self.g1_tau_r, self.g1_tau_mr = transform_g_to_direct_space(self.mesh, self.g1)
 
 
-    def calc_chi1(self):
+    def calc_chi1(self) -> None:
         """
         Function to calculate chi1(q,iqn).
         This also calculates the trace of chi1(q,iqn) as a consistency check.
@@ -206,7 +206,7 @@ class Tpsc:
                           disp=True)
 
 
-    def calc_uch(self, n: float, U: float, Uchmin=0., Uchmax=100.):
+    def calc_uch(self, n: float, U: float, Uchmin=0., Uchmax=100.) -> float:
         """
         Function to compute Uch from chi1 and the sum rule.
         Note: calc_usp has to be called before this function.
@@ -229,7 +229,7 @@ class Tpsc:
                     disp=True)
 
 
-    def calc_chisp(self, usp):
+    def calc_chisp(self, usp) -> np.ndarray:
         """
         Computes chisp(q) = chi1(q)/(1 - Usp/2 * chi1(q)).
 
@@ -241,7 +241,7 @@ class Tpsc:
         return  self.chi1 / (1 - 0.5 * usp * self.chi1)
 
 
-    def calc_chich(self, uch):
+    def calc_chich(self, uch) -> np.ndarray:
         """
         Computes chich(q) = chi1(q)/(1 + Uch/2 * chi1(q)).
 
@@ -334,7 +334,7 @@ class Tpsc:
             return n + Usp/(2 * U)*(2-n)*(2-n)-2+2*n - n*n
 
 
-    def calc_xisp_commensurate(self):
+    def calc_xisp_commensurate(self) -> "float | None":
         """
         Compute the spin correlation length from commensurate spin fluctuations at Q=(pi,pi).
         This calculates the width at half maximum of the spin susceptibility ONLY if its maximal value is at (pi,pi).
@@ -368,7 +368,7 @@ class Tpsc:
         self.xisp = 1/(np.pi - qHM - q0)
 
 
-    def calc_second_level_approx(self, n: float, U: float):
+    def calc_second_level_approx(self, n: float, U: float) -> None:
         """
         Function to calculate the self-energy in the second level of approximation of TPSC.
         Important: The function calc_first_level_approx must be called before this one.
@@ -406,7 +406,7 @@ class Tpsc:
         self.g2 = calcGiwnk(self.mesh, self.dispersion[None, :, :] - self.mu2 + self.self_energy)
 
 
-    def check_self_consistency(self, n: float, U: float):
+    def check_self_consistency(self, n: float, U: float) -> None:
         """
         Function to check the self-consistency between one- and two-particle quantities through:
         Tr[Self-Energy*Green's function] = U<n_up n_dn> - Un^2/4
@@ -430,7 +430,7 @@ class Tpsc:
         self.exact_trace_self_g = U * self.docc - U * n * n / 4
 
 
-    def solve(self, n: float, U: float,):
+    def solve(self, n: float, U: float,) -> dict:
         """
         Run the TPSC method
 
@@ -482,7 +482,7 @@ class Tpsc:
         return string
 
 
-    def writeResultsJSON(self, filename):
+    def writeResultsJSON(self, filename) -> None:
         """
         Write the results in a JSON file
 
