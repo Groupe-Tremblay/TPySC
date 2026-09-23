@@ -258,7 +258,7 @@ class TpscPlus:
         small_num_for_usp_max = 1e-9
 
         # Compute the trace of chi2 squared.
-        trace_chi2_sq = self.mesh.trace('B', self.chi2 * np.conj(self.chi2))
+        trace_chi2_sq = self.mesh.trace('B', self.chi2 * np.conj(self.chi2)).real
 
         # Get the two possible upper bounds for usp
         usp_max_abs = U / (1 + U * trace_chi2_sq / (n*n))
