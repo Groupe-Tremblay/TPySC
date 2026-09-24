@@ -1,9 +1,13 @@
-import tpysc
 import json
 import numpy as np
 
+from tpysc.dispersions import calcDispersion2DSquare
+from tpysc.mesh import Mesh2D
+from tpysc.tpsc import Tpsc
+from tpysc.tpscplus import TpscPlus
 
-def test_compare_tpsc():
+
+def test_compare_tpsc(ref_tpsc_path):
     """
     A simple test that compare results from the current commit to those of f5dc1ceff8627341739142caea4d4d09678a0b74
     """
@@ -26,14 +30,14 @@ def test_compare_tpsc():
             },
     }
 
-    mesh = tpysc.mesh.Mesh2D(**parameters["mesh"])
-    dispersion = tpysc.dispersions.calcDispersion2DSquare(mesh, **parameters["dispersion"])
-    obj = tpysc.Tpsc(mesh, dispersion,)
+    mesh = Mesh2D(**parameters["mesh"])
+    dispersion = calcDispersion2DSquare(mesh, **parameters["dispersion"])
+    obj = Tpsc(mesh, dispersion,)
 
     results = obj.solve(**parameters["tpsc"])
 
     # Load the reference results
-    with open("ref_tpsc.json", 'r') as reference_filename:
+    with open(ref_tpsc_path, 'r') as reference_filename:
         reference_results = json.load(reference_filename)
 
     # Compare
@@ -44,7 +48,7 @@ def test_compare_tpsc():
         assert np.allclose(results[key], reference_results[key], rtol=1e-06, atol=1e-08)
 
 
-def test_compare_tpscplus():
+def test_compare_tpscplus(ref_tpscplus_path):
     """
     A simple test that compare results from the current commit to those of Camille Lahaie's code.
     """
@@ -67,14 +71,14 @@ def test_compare_tpscplus():
             },
     }
 
-    mesh = tpysc.mesh.Mesh2D(**parameters["mesh"])
-    dispersion = tpysc.dispersions.calcDispersion2DSquare(mesh, **parameters["dispersion"])
-    obj = tpysc.TpscPlus(mesh, dispersion)
+    mesh = Mesh2D(**parameters["mesh"])
+    dispersion = calcDispersion2DSquare(mesh, **parameters["dispersion"])
+    obj = TpscPlus(mesh, dispersion)
 
     results = obj.solve(**parameters["tpsc"])
 
     # Load the reference results
-    with open("ref_tpscplus_lahaie.json", 'r') as reference_filename:
+    with open(ref_tpscplus_path, 'r') as reference_filename:
         reference_results = json.load(reference_filename)
 
     # Compare
