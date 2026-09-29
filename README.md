@@ -1,7 +1,7 @@
-<h1 align="center">TPSC</h1>
+<h1 align="center">TPySC</h1>
 <p align="center">
 A Python library that allows the computation of Hubbard model related functions and quantities (such as the self-energy and Green's function) using the Two-Particle-Self-Consistent (TPSC) approach first described in
-[<a href="https://arxiv.org/abs/cond-mat/9702188">Vilk and Tremblay, 1997</a>]. See additional references in the documentation. 
+[<a href="https://arxiv.org/abs/cond-mat/9702188">Vilk and Tremblay, 1997</a>]. See additional references in the documentation.
 </p>
 
 ## Table of contents
@@ -10,24 +10,23 @@ A Python library that allows the computation of Hubbard model related functions 
 - [Documentation and tutorials](#documentation-and-tutorials)
 - [Examples](#examples)
 - [Tests](#tests)
-- [Citations](#Citations)
-- [TODO](#TODO)
+- [Licence and citation](#license-and-citation)
 
 
 ## Installation
 
-This package will be soon available on PyPI. 
+This package will be soon available on PyPI.
 Meanwhile, you can install it by cloning this repository and using pip:
 
 ```bash
-git clone https://github.com/amstremblay/TPSC
-cd TPSC
+git clone https://github.com/Groupe-Tremblay/TPySC.git
+cd TPySC
 pip install .
 ```
 
 ## Documentation and tutorials
 
-Online documentation is living on ReadTheDocs: [https://tpsc.readthedocs.io](https://tpsc.readthedocs.io)
+See the [online documentation](https://groupe-tremblay.github.io/TPySC/).
 
 Documentation can also be build locally with the sources located in the ``docs`` folder.
 To build the documentation locally:
@@ -45,13 +44,20 @@ You can access the documentation in your browser by opening ``docs/build/html/in
 
 The `examples/` directory contains some examples for you to experiment with and get familiar with different use cases.
 
-The quickest way to start doing calculations using TPSC is to call the `TPSC` executable from the command line and provide input parameters in a JSON `para.json` file (see the `examples` directory):
+A calculation is set up by building a mesh, computing a dispersion on it, and
+solving:
 
-```bash
-TPSC para.json
+```python
+import tpysc
+
+mesh = tpysc.Mesh2D(T=0.1, nk1=64, wmax=8, IR_tol=1e-12)
+dispersion = tpysc.dispersions.calcDispersion2DSquare(mesh, t=1, tp=1, tpp=0)
+solver = tpysc.Tpsc(mesh, dispersion)
+results = solver.solve(n=1, U=2.0)
 ```
 
-TPSC could also be use in Python scripts for a finner control over input parameters or to post-process the results of TPSC calculations such as plotting observables.
+The returned dictionary can then be post-processed in the same script, for
+instance to plot observables.
 
 ## Tests
 
@@ -67,20 +73,10 @@ pytest
 Every test should pass.
 If not, please create an issue with the output of the above code and a description of your system.
 
-## Citations
-
-See About_TPSC.rst
-
-## TODO
-
-* Release on PyPi
-* Automated tests with `pytest`
-* More examples
-* Inclure TPSC+ ?
-* Inclure binding avec TRIQS ?
 
 ## License and citation
-This software is released under the MIT License. See LICENSE.txt for details.
+
+This software is released under the MIT License. See [LICENSE](LICENSE) for details.
 
 If you find the intermediate representation, sparse sampling, or this software useful in your research, please consider citing the following papers:
 

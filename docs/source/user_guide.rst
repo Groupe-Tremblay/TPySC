@@ -10,5 +10,31 @@ TPSC
 
 TPSC calculation are handled by the TPSC class.
 
-.. autoclass:: TPSC.TPSC
+.. autoclass:: tpysc.Tpsc
+    :members:
+
+Mesh2D
+------
+
+The k-grid and imaginary-time/Matsubara-frequency sampling grids are handled
+by the Mesh2D class.
+
+.. autoclass:: tpysc.Mesh2D
+    :members:
+
+Dispersions
+-----------
+
+Tight-binding dispersions to evaluate on a Mesh2D's k-grid.
+
+.. automodule:: tpysc.dispersions
+    :members:
+
+Green's functions
+------------------
+
+Fermionic Green's function utilities: building Matsubara Green's functions, extracting
+the density, and transforming to real space.
+
+.. automodule:: tpysc.gf
     :members:

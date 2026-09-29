@@ -11,15 +11,15 @@ sys.path.insert(0, os.path.abspath('../../'))
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'TPSC'
-copyright = '2023, André-Marie Tremblay, Camille Lahaie, Chloé-Aminata Gauvin, Jérôme Leblanc, Moïse Rousseau, Nicolas'
-author = 'André-Marie Tremblay, Camille Lahaie, Chloé-Aminata Gauvin, Jérôme Leblanc, Moïse Rousseau, Nicolas M'
+copyright = '2026, Jérôme Leblanc, Chloé-Aminata Gauvin-Ndiaye, Nicolas Martin, Camille Lahaie, André-Marie Tremblay, Moise Rousseau'
+author = 'Jérôme Leblanc, Chloé-Aminata Gauvin-Ndiaye, Nicolas Martin, Camille Lahaie, André-Marie Tremblay, Moise Rousseau'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx.ext.autodoc']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo']
 
-autodoc_mock_imports = ["scipy", "numpy", "sparse_ir", "matplotlib"]
+autodoc_mock_imports = ["scipy", "numpy", "sparse_ir", "h5py"]
 
 templates_path = ['_templates']
 exclude_patterns = []
