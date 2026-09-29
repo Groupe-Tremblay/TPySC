@@ -1,0 +1,804 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User guide &mdash; TPSC  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Theory guide" href="theory_guide.html" />
+    <link rel="prev" title="Getting started" href="getting_started.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            TPSC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting started</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">User guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#tpsc">TPSC</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#tpysc.Tpsc"><code class="docutils literal notranslate"><span class="pre">Tpsc</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#tpysc.Tpsc.calc_chi1"><code class="docutils literal notranslate"><span class="pre">Tpsc.calc_chi1()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tpysc.Tpsc.calc_chich"><code class="docutils literal notranslate"><span class="pre">Tpsc.calc_chich()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tpysc.Tpsc.calc_chisp"><code class="docutils literal notranslate"><span class="pre">Tpsc.calc_chisp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tpysc.Tpsc.calc_double_occupancy"><code class="docutils literal notranslate"><span class="pre">Tpsc.calc_double_occupancy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tpysc.Tpsc.calc_g1"><code class="docutils literal notranslate"><span class="pre">Tpsc.calc_g1()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tpysc.Tpsc.calc_uch"><code class="docutils literal notranslate"><span class="pre">Tpsc.calc_uch()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tpysc.Tpsc.calc_usp"><code class="docutils literal notranslate"><span class="pre">Tpsc.calc_usp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tpysc.Tpsc.calc_xisp_commensurate"><code class="docutils literal notranslate"><span class="pre">Tpsc.calc_xisp_commensurate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tpysc.Tpsc.solve"><code class="docutils literal notranslate"><span class="pre">Tpsc.solve()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tpysc.Tpsc.writeResultsJSON"><code class="docutils literal notranslate"><span class="pre">Tpsc.writeResultsJSON()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#mesh2d">Mesh2D</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#tpysc.Mesh2D"><code class="docutils literal notranslate"><span class="pre">Mesh2D</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#tpysc.Mesh2D.extrapolate_fermionic_zero_freq"><code class="docutils literal notranslate"><span class="pre">Mesh2D.extrapolate_fermionic_zero_freq()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tpysc.Mesh2D.get_ind_kpt"><code class="docutils literal notranslate"><span class="pre">Mesh2D.get_ind_kpt()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tpysc.Mesh2D.get_specific_wn"><code class="docutils literal notranslate"><span class="pre">Mesh2D.get_specific_wn()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tpysc.Mesh2D.k_to_mr"><code class="docutils literal notranslate"><span class="pre">Mesh2D.k_to_mr()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tpysc.Mesh2D.k_to_r"><code class="docutils literal notranslate"><span class="pre">Mesh2D.k_to_r()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tpysc.Mesh2D.r_to_k"><code class="docutils literal notranslate"><span class="pre">Mesh2D.r_to_k()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tpysc.Mesh2D.save_k_grid_function"><code class="docutils literal notranslate"><span class="pre">Mesh2D.save_k_grid_function()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tpysc.Mesh2D.save_wn_function"><code class="docutils literal notranslate"><span class="pre">Mesh2D.save_wn_function()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tpysc.Mesh2D.tau_to_wn"><code class="docutils literal notranslate"><span class="pre">Mesh2D.tau_to_wn()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tpysc.Mesh2D.trace"><code class="docutils literal notranslate"><span class="pre">Mesh2D.trace()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tpysc.Mesh2D.wn_to_tau"><code class="docutils literal notranslate"><span class="pre">Mesh2D.wn_to_tau()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dispersions">Dispersions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#tpysc.dispersions.calcDispersion2DSquare"><code class="docutils literal notranslate"><span class="pre">calcDispersion2DSquare()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#green-s-functions">Green’s functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#tpysc.gf.calcGiwnk"><code class="docutils literal notranslate"><span class="pre">calcGiwnk()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tpysc.gf.calcNfromG"><code class="docutils literal notranslate"><span class="pre">calcNfromG()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tpysc.gf.transform_g_to_direct_space"><code class="docutils literal notranslate"><span class="pre">transform_g_to_direct_space()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="theory_guide.html">Theory guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About TPSC</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">TPSC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">User guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/user_guide.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="user-guide">
+<h1>User guide<a class="headerlink" href="#user-guide" title="Link to this heading"></a></h1>
+<p>General overview ?</p>
+<section id="tpsc">
+<h2>TPSC<a class="headerlink" href="#tpsc" title="Link to this heading"></a></h2>
+<p>TPSC calculation are handled by the TPSC class.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="tpysc.Tpsc">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tpysc.</span></span><span class="sig-name descname"><span class="pre">Tpsc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#tpysc.Mesh2D" title="tpysc.mesh.Mesh2D"><span class="pre">Mesh2D</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">dispersion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tpysc.Tpsc" title="Link to this definition"></a></dt>
+<dd><p>Set up and run a Two-Particle Self-Consistent (TPSC) calculation.</p>
+<p>The calculation is performed using the <a class="reference internal" href="#tpysc.Tpsc.solve" title="tpysc.Tpsc.solve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">solve()</span></code></a> method, which runs the
+first and second levels of approximation and checks self-consistency between
+one- and two-particle quantities.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mesh</strong> (<a class="reference internal" href="#tpysc.Mesh2D" title="tpysc.Mesh2D"><em>Mesh2D</em></a>) – Two-dimensional momentum/frequency mesh used for the calculation.</p></li>
+<li><p><strong>dispersion</strong> (<em>numpy.ndarray</em>) – Array containing the dispersion values defined on the mesh.</p></li>
+<li><p><strong>g1</strong> (<em>numpy.ndarray</em><em> or </em><em>None</em>) – Green’s function at the first level of approximation, G1(k, iwn).
+<code class="docutils literal notranslate"><span class="pre">None</span></code> until <a class="reference internal" href="#tpysc.Tpsc.calc_g1" title="tpysc.Tpsc.calc_g1"><code class="xref py py-meth docutils literal notranslate"><span class="pre">calc_g1()</span></code></a> has been called.</p></li>
+<li><p><strong>g1_tau_r</strong> (<em>numpy.ndarray</em><em> or </em><em>None</em>) – G1(r, tau), the first-level Green’s function transformed to
+direct (real space, imaginary time) space. <code class="docutils literal notranslate"><span class="pre">None</span></code> until <a class="reference internal" href="#tpysc.Tpsc.calc_g1" title="tpysc.Tpsc.calc_g1"><code class="xref py py-meth docutils literal notranslate"><span class="pre">calc_g1()</span></code></a>
+has been called.</p></li>
+<li><p><strong>g1_tau_mr</strong> (<em>numpy.ndarray</em><em> or </em><em>None</em>) – G1(-r, tau), the first-level Green’s function transformed to
+direct space with the real-space coordinate mirrored. <code class="docutils literal notranslate"><span class="pre">None</span></code> until
+<a class="reference internal" href="#tpysc.Tpsc.calc_g1" title="tpysc.Tpsc.calc_g1"><code class="xref py py-meth docutils literal notranslate"><span class="pre">calc_g1()</span></code></a> has been called.</p></li>
+<li><p><strong>mu1</strong> (<em>float</em><em> or </em><em>None</em>) – Chemical potential at the first level of approximation. <code class="docutils literal notranslate"><span class="pre">None</span></code>
+until <a class="reference internal" href="#tpysc.Tpsc.calc_g1" title="tpysc.Tpsc.calc_g1"><code class="xref py py-meth docutils literal notranslate"><span class="pre">calc_g1()</span></code></a> has been called.</p></li>
+<li><p><strong>chi1</strong> (<em>numpy.ndarray</em><em> or </em><em>None</em>) – Irreducible susceptibility chi1(q, iqn). <code class="docutils literal notranslate"><span class="pre">None</span></code> until
+<a class="reference internal" href="#tpysc.Tpsc.calc_chi1" title="tpysc.Tpsc.calc_chi1"><code class="xref py py-meth docutils literal notranslate"><span class="pre">calc_chi1()</span></code></a> has been called.</p></li>
+<li><p><strong>trace_chi1</strong> (<em>complex</em>) – Trace of chi1(q, iqn), computed as a consistency check.
+Not set until <code class="xref py py-meth docutils literal notranslate"><span class="pre">calc_first_level_approx()</span></code> has been called.</p></li>
+<li><p><strong>Usp</strong> (<em>float</em>) – Irreducible spin vertex. Set to -1.0 as a default value until
+<a class="reference internal" href="#tpysc.Tpsc.calc_usp" title="tpysc.Tpsc.calc_usp"><code class="xref py py-meth docutils literal notranslate"><span class="pre">calc_usp()</span></code></a> has been called.</p></li>
+<li><p><strong>chisp</strong> (<em>numpy.ndarray</em>) – Spin susceptibility chisp(q, iqn). Not set until
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">calc_first_level_approx()</span></code> has been called.</p></li>
+<li><p><strong>docc</strong> (<em>float</em>) – Double occupancy. Set to -1.0 as a default value until
+<a class="reference internal" href="#tpysc.Tpsc.calc_double_occupancy" title="tpysc.Tpsc.calc_double_occupancy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">calc_double_occupancy()</span></code></a> has been called.</p></li>
+<li><p><strong>Uch</strong> (<em>float</em>) – Irreducible charge vertex. Set to -1.0 as a default value until
+<a class="reference internal" href="#tpysc.Tpsc.calc_uch" title="tpysc.Tpsc.calc_uch"><code class="xref py py-meth docutils literal notranslate"><span class="pre">calc_uch()</span></code></a> has been called.</p></li>
+<li><p><strong>chich</strong> (<em>numpy.ndarray</em>) – Charge susceptibility chich(q, iqn). Not set until
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">calc_first_level_approx()</span></code> has been called.</p></li>
+<li><p><strong>g2</strong> (<em>numpy.ndarray</em><em> or </em><em>None</em>) – Green’s function at the second level of approximation, G2(k, iwn).
+<code class="docutils literal notranslate"><span class="pre">None</span></code> until <code class="xref py py-meth docutils literal notranslate"><span class="pre">calc_second_level_approx()</span></code> has been called.</p></li>
+<li><p><strong>mu2</strong> (<em>float</em><em> or </em><em>None</em>) – Chemical potential at the second level of approximation. <code class="docutils literal notranslate"><span class="pre">None</span></code>
+until <code class="xref py py-meth docutils literal notranslate"><span class="pre">calc_second_level_approx()</span></code> has been called.</p></li>
+<li><p><strong>self_energy</strong> (<em>numpy.ndarray</em><em> or </em><em>None</em>) – Second-level (TPSC) self-energy, Sigma(k, iwn), excluding
+the Hartree term. <code class="docutils literal notranslate"><span class="pre">None</span></code> until <code class="xref py py-meth docutils literal notranslate"><span class="pre">calc_second_level_approx()</span></code> has
+been called.</p></li>
+<li><p><strong>main_results</strong> (<em>dict</em>) – Dictionary summarizing the results of the TPSC
+calculation, populated by <a class="reference internal" href="#tpysc.Tpsc.solve" title="tpysc.Tpsc.solve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">solve()</span></code></a>.</p></li>
+<li><p><strong>trace_self_g1</strong> (<em>complex</em><em> or </em><em>None</em>) – Trace of the product of the self-energy with G1,
+Tr[Sigma * G1]. <code class="docutils literal notranslate"><span class="pre">None</span></code> until <code class="xref py py-meth docutils literal notranslate"><span class="pre">check_self_consistency()</span></code> has been
+called.</p></li>
+<li><p><strong>trace_self_g2</strong> (<em>complex</em><em> or </em><em>None</em>) – Trace of the product of the self-energy with G2,
+Tr[Sigma * G2]. <code class="docutils literal notranslate"><span class="pre">None</span></code> until <code class="xref py py-meth docutils literal notranslate"><span class="pre">check_self_consistency()</span></code> has been
+called.</p></li>
+<li><p><strong>exact_trace_self_g</strong> (<em>float</em>) – Expected value of Tr[Sigma * G1] from the exact
+sum rule, U * docc - U * n^2 / 4, used by <code class="xref py py-meth docutils literal notranslate"><span class="pre">check_self_consistency()</span></code>
+as a self-consistency check. Not set until <code class="xref py py-meth docutils literal notranslate"><span class="pre">check_self_consistency()</span></code>
+has been called.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="tpysc.Tpsc.calc_chi1">
+<span class="sig-name descname"><span class="pre">calc_chi1</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#tpysc.Tpsc.calc_chi1" title="Link to this definition"></a></dt>
+<dd><p>Function to calculate chi1(q,iqn).
+This also calculates the trace of chi1(q,iqn) as a consistency check.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tpysc.Tpsc.calc_chich">
+<span class="sig-name descname"><span class="pre">calc_chich</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uch</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#tpysc.Tpsc.calc_chich" title="Link to this definition"></a></dt>
+<dd><p>Computes chich(q) = chi1(q)/(1 + Uch/2 * chi1(q)).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>uch</strong> (<em>float</em>) – The irreducible charge vertex.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The charge susceptibility chich(q, iqn).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tpysc.Tpsc.calc_chisp">
+<span class="sig-name descname"><span class="pre">calc_chisp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">usp</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#tpysc.Tpsc.calc_chisp" title="Link to this definition"></a></dt>
+<dd><p>Computes chisp(q) = chi1(q)/(1 - Usp/2 * chi1(q)).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>usp</strong> (<em>float</em>) – The irreducible spin vertex.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The spin susceptibility chisp(q, iqn).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tpysc.Tpsc.calc_double_occupancy">
+<span class="sig-name descname"><span class="pre">calc_double_occupancy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#tpysc.Tpsc.calc_double_occupancy" title="Link to this definition"></a></dt>
+<dd><p>Compute the double occupancy <span class="math notranslate nohighlight">\(\langle n_\uparrow n_\downarrow \rangle\)</span>.</p>
+<p><a class="reference internal" href="#tpysc.Tpsc.calc_usp" title="tpysc.Tpsc.calc_usp"><code class="xref py py-meth docutils literal notranslate"><span class="pre">calc_usp()</span></code></a> must be called before this method. The TPSC ansatz
+used here satisfies particle-hole symmetry, giving a piecewise
+expression in terms of the irreducible spin vertex <code class="docutils literal notranslate"><span class="pre">Usp</span></code>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\langle n_\uparrow n_\downarrow \rangle =
+\begin{cases}
+    \dfrac{U_\mathrm{sp}}{4U}\, n^2 &amp; \text{if} ~ n &lt; 1 \\
+    \dfrac{U_\mathrm{sp}}{4U}\, (2-n)^2 - 1 + n &amp; \text{if} ~ n \geq 1
+\end{cases}\end{split}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<em>float</em>) – Electron filling (density per site).</p></li>
+<li><p><strong>U</strong> (<em>float</em>) – On-site Hubbard interaction strength.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The double occupancy.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tpysc.Tpsc.calc_g1">
+<span class="sig-name descname"><span class="pre">calc_g1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#tpysc.Tpsc.calc_g1" title="Link to this definition"></a></dt>
+<dd><p>Compute the first-level Green’s function G1 and its real-space transforms.</p>
+<p>Finds the chemical potential <code class="docutils literal notranslate"><span class="pre">mu1</span></code> that yields the target density <code class="docutils literal notranslate"><span class="pre">n</span></code> by
+root-finding on the non-interacting density, then computes G1(k, iwn) and
+its Fourier transforms to direct space, G1(r, tau) and G1(-r, tau).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> (<em>float</em>) – Electron filling (density per site).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tpysc.Tpsc.calc_uch">
+<span class="sig-name descname"><span class="pre">calc_uch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Uchmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Uchmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#tpysc.Tpsc.calc_uch" title="Link to this definition"></a></dt>
+<dd><p>Function to compute Uch from chi1 and the sum rule.
+Note: calc_usp has to be called before this function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<em>float</em>) – Electron filling (density per site).</p></li>
+<li><p><strong>U</strong> (<em>float</em>) – On-site Hubbard interaction strength.</p></li>
+<li><p><strong>Uchmin</strong> (<em>float</em>) – Lower bound of the search interval for Uch. Defaults to 0.</p></li>
+<li><p><strong>Uchmax</strong> (<em>float</em>) – Upper bound of the search interval for Uch. Defaults to 100.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The irreducible charge vertex Uch solving the charge susceptibility sum rule.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tpysc.Tpsc.calc_usp">
+<span class="sig-name descname"><span class="pre">calc_usp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#tpysc.Tpsc.calc_usp" title="Link to this definition"></a></dt>
+<dd><p>Function to compute Usp from chi1 and the sum rule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<em>float</em>) – Electron filling (density per site).</p></li>
+<li><p><strong>U</strong> (<em>float</em>) – On-site Hubbard interaction strength.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The irreducible spin vertex Usp solving the spin susceptibility sum rule.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tpysc.Tpsc.calc_xisp_commensurate">
+<span class="sig-name descname"><span class="pre">calc_xisp_commensurate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#tpysc.Tpsc.calc_xisp_commensurate" title="Link to this definition"></a></dt>
+<dd><p>Compute the spin correlation length from commensurate spin fluctuations at Q=(pi,pi).
+This calculates the width at half maximum of the spin susceptibility ONLY if its maximal value is at (pi,pi).
+If the spin susceptibility maximum is not at (pi,pi) (incommensurate spin fluctuations), this function returns -1.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tpysc.Tpsc.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">U</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#tpysc.Tpsc.solve" title="Link to this definition"></a></dt>
+<dd><p>Run the TPSC method</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<em>float</em>) – Electron filling (density per site).</p></li>
+<li><p><strong>U</strong> (<em>float</em>) – On-site Hubbard interaction strength.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary containing main TPSC output</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tpysc.Tpsc.writeResultsJSON">
+<span class="sig-name descname"><span class="pre">writeResultsJSON</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#tpysc.Tpsc.writeResultsJSON" title="Link to this definition"></a></dt>
+<dd><p>Write the results in a JSON file</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em>) – The name of the output JSON file</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="mesh2d">
+<h2>Mesh2D<a class="headerlink" href="#mesh2d" title="Link to this heading"></a></h2>
+<p>The k-grid and imaginary-time/Matsubara-frequency sampling grids are handled
+by the Mesh2D class.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="tpysc.Mesh2D">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tpysc.</span></span><span class="sig-name descname"><span class="pre">Mesh2D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nk1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">IR_tol</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-12</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tpysc.Mesh2D" title="Link to this definition"></a></dt>
+<dd><p>Hold the k-grid and the sparsely sampled imaginary-time and
+Matsubara-frequency grids for a 2D system.</p>
+<p>Defines the Fourier transform routines between real space and k-space
+(‘r’ &lt;-&gt; ‘k’) and between imaginary time, the intermediate
+representation, and Matsubara frequency (‘tau’ &lt;-&gt; ‘l’ &lt;-&gt; ‘iw_n’).
+Valid only for the 2D case.</p>
+<p>Credit for the basics: Niklas Witt,
+<a class="reference external" href="https://spm-lab.github.io/sparse-ir-tutorial/src/TPSC_py.html">https://spm-lab.github.io/sparse-ir-tutorial/src/TPSC_py.html</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>float</em>) – Temperature.</p></li>
+<li><p><strong>IR_basis_set</strong> (<em>sparse_ir.FiniteTempBasisSet</em>) – Intermediate representation basis set used for
+fermionic and bosonic sampling.</p></li>
+<li><p><strong>nk1</strong> (<em>int</em>) – Number of k-points along the first dimension.</p></li>
+<li><p><strong>nk2</strong> (<em>int</em>) – Number of k-points along the second dimension. Equals nk1.</p></li>
+<li><p><strong>nk</strong> (<em>int</em>) – Total number of k-points in the mesh (nk1 * nk2).</p></li>
+<li><p><strong>k1</strong> (<em>np.ndarray</em>) – Meshgrid of k-point coordinates along the first dimension,
+normalized to [0, 1) (i.e. k/2*pi).</p></li>
+<li><p><strong>k2</strong> (<em>np.ndarray</em>) – Meshgrid of k-point coordinates along the second dimension,
+normalized to [0, 1) (i.e. k/2*pi).</p></li>
+<li><p><strong>iw0_f</strong> (<em>int</em>) – Index of the lowest fermionic Matsubara frequency (n=1)
+in the IR basis.</p></li>
+<li><p><strong>iw0_b</strong> (<em>int</em>) – Index of the lowest (zero) bosonic Matsubara frequency
+in the IR basis.</p></li>
+<li><p><strong>iwn_f</strong> (<em>np.ndarray</em>) – Fermionic Matsubara frequencies i*wn.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="tpysc.Mesh2D.extrapolate_fermionic_zero_freq">
+<span class="sig-name descname"><span class="pre">extrapolate_fermionic_zero_freq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj_wn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_freqs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">np.ndarray</span></span></span><a class="headerlink" href="#tpysc.Mesh2D.extrapolate_fermionic_zero_freq" title="Link to this definition"></a></dt>
+<dd><p>Extrapolate a fermionic function to zero frequency, using barycentric
+Lagrange interpolation over the first n_freqs Matsubara frequencies.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj_wn</strong> (<em>np.ndarray</em>) – The fermionic function to extrapolate.</p></li>
+<li><p><strong>n_freqs</strong> (<em>int</em>) – Number of Matsubara frequencies to use for
+interpolation. Defaults to 4.</p></li>
+<li><p><strong>eta</strong> (<em>float</em>) – Small imaginary frequency offset for the extrapolation.
+Defaults to 0.001.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The extrapolated function value at frequency i*eta.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float or np.ndarray</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The offset eta avoids the numerical issues of evaluating exactly
+at zero frequency.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tpysc.Mesh2D.get_ind_kpt">
+<span class="sig-name descname"><span class="pre">get_ind_kpt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ky</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#tpysc.Mesh2D.get_ind_kpt" title="Link to this definition"></a></dt>
+<dd><p>Return the mesh index of the k-point closest to (kx, ky) in the
+Brillouin zone.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>kx</strong> (<em>float</em>) – x-component of the k-point, in radians.</p></li>
+<li><p><strong>ky</strong> (<em>float</em>) – y-component of the k-point, in radians.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Flattened index of the closest k-point in the mesh.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tpysc.Mesh2D.get_specific_wn">
+<span class="sig-name descname"><span class="pre">get_specific_wn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">statistics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj_wn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_array</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">np.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#tpysc.Mesh2D.get_specific_wn" title="Link to this definition"></a></dt>
+<dd><p>Evaluate a sparsely-sampled Matsubara-frequency object at specific
+Matsubara frequency indices.</p>
+<p>Takes a list of Matsubara frequency indices (n=0, ±1, ±2, …) and
+evaluates obj_wn at those frequencies. If obj_wn is multi-dimensional,
+the wn axis must be the first one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>statistics</strong> (<em>str</em>) – Statistic type, ‘f’ for fermionic or ‘b’ for
+bosonic. Case-insensitive.</p></li>
+<li><p><strong>obj_wn</strong> (<em>np.ndarray</em>) – Object sampled on the sparse Matsubara-frequency grid,
+with the frequency axis first.</p></li>
+<li><p><strong>n_array</strong> (<em>int</em><em> or </em><em>float</em><em> or </em><em>list</em><em> or </em><em>np.ndarray</em>) – Matsubara frequency indices n at which to evaluate the
+object. Accepts a scalar, a list, or a numpy array.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The object evaluated at the requested Matsubara frequencies,
+with any length-one axis removed.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If n_array is not an int, float, list, or
+np.ndarray.</p></li>
+<li><p><strong>ValueError</strong> – If statistics is not ‘f’ or ‘b’
+(case-insensitive).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tpysc.Mesh2D.k_to_mr">
+<span class="sig-name descname"><span class="pre">k_to_mr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#tpysc.Mesh2D.k_to_mr" title="Link to this definition"></a></dt>
+<dd><p>Fourier transform an object from k-space to real space, using the
+opposite sign convention from k_to_r (a -i k.r kernel, normalized by
+1/N).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>obj_k</strong> (<em>np.ndarray</em>) – Object defined on the k-mesh, with the k-axes second and
+third (axes 1 and 2).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The object transformed to real space.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tpysc.Mesh2D.k_to_r">
+<span class="sig-name descname"><span class="pre">k_to_r</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#tpysc.Mesh2D.k_to_r" title="Link to this definition"></a></dt>
+<dd><p>Fourier transform an object from k-space to real space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>obj_k</strong> (<em>np.ndarray</em>) – Object defined on the k-grid, with the k-axes second and
+third (axes 1 and 2).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The object transformed to real space.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tpysc.Mesh2D.r_to_k">
+<span class="sig-name descname"><span class="pre">r_to_k</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj_r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#tpysc.Mesh2D.r_to_k" title="Link to this definition"></a></dt>
+<dd><p>Fourier transform an object from real space to k-space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>obj_r</strong> (<em>np.ndarray</em>) – Object defined on the real-space mesh, with the
+real-space axes second and third (axes 1 and 2).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The object transformed to k-space.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tpysc.Mesh2D.save_k_grid_function">
+<span class="sig-name descname"><span class="pre">save_k_grid_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">io_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'a'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#tpysc.Mesh2D.save_k_grid_function" title="Link to this definition"></a></dt>
+<dd><p>Save a k-space grid array to an HDF5 file.</p>
+<p>For complex-valued arrays, the real and imaginary parts are stored
+separately in named datasets within a group for easier visualization.
+Real-valued arrays are stored directly as a single dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target_file</strong> (<em>str</em>) – Path to the HDF5 file.</p></li>
+<li><p><strong>data_label</strong> (<em>str</em>) – Key or group name for the dataset(s) in the HDF5 file.</p></li>
+<li><p><strong>obj</strong> (<em>np.ndarray</em>) – The k-space grid array to save. Should be a 2D array.</p></li>
+<li><p><strong>io_mode</strong> (<em>str</em>) – Mode in which to open the HDF5 file (‘a’ to
+append, ‘w’ to overwrite). Defaults to ‘a’.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function currently saves only the subset obj[:(self.nk1//2), :(self.nk1//2)].
+This behavior is flagged for optimization.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tpysc.Mesh2D.save_wn_function">
+<span class="sig-name descname"><span class="pre">save_wn_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">io_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#tpysc.Mesh2D.save_wn_function" title="Link to this definition"></a></dt>
+<dd><p>Save a Matsubara-frequency or imaginary-time grid array to an HDF5
+file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target_file</strong> (<em>str</em>) – Path to the HDF5 file.</p></li>
+<li><p><strong>data_label</strong> (<em>str</em>) – Key or group name for the dataset(s) in the HDF5
+file.</p></li>
+<li><p><strong>obj</strong> (<em>np.ndarray</em>) – The grid array to save.</p></li>
+<li><p><strong>io_mode</strong> (<em>str</em>) – Mode in which to open the HDF5 file (‘a’ to
+append, ‘w’ to overwrite).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tpysc.Mesh2D.tau_to_wn">
+<span class="sig-name descname"><span class="pre">tau_to_wn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">statistics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj_tau</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#tpysc.Mesh2D.tau_to_wn" title="Link to this definition"></a></dt>
+<dd><p>Fourier transform an object from imaginary time to Matsubara frequency,
+via the intermediate representation basis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>statistics</strong> (<em>str</em>) – Statistic type, ‘f’ for fermionic or ‘b’ for
+bosonic. Case-insensitive.</p></li>
+<li><p><strong>obj_tau</strong> (<em>np.ndarray</em>) – Object sampled on the sparse tau grid, with the tau
+axis first.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The object evaluated on the sparse Matsubara-frequency grid.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tpysc.Mesh2D.trace">
+<span class="sig-name descname"><span class="pre">trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">statistic</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#tpysc.Mesh2D.trace" title="Link to this definition"></a></dt>
+<dd><p>Compute the sum over wavevectors and Matsubara frequencies of obj.</p>
+<p>Average obj over the k-grid, then sum over Matsubara frequency via the
+intermediate representation basis by evaluating it near tau=0. tau_value
+must be 0 or beta (1/T), since the basis functions are defined only for
+tau in [0, beta]; these give the tau=0+ and tau=0- limits of obj’s imaginary-time
+counterpart, which is discontinuous at tau=0.</p>
+<div class="math notranslate nohighlight">
+\[\mathrm{tr}\{O\} = \frac{T}{N}\sum_{\mathbf{k}}\sum_{i\omega_n}
+    O(\mathbf{k}, i\omega_n)\, e^{i\omega_n 0^\pm}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>statistic</strong> (<em>str</em>) – Statistic type, ‘f’ for fermionic or ‘b’ for
+bosonic. Case-insensitive.</p></li>
+<li><p><strong>obj</strong> (<em>np.ndarray</em>) – Object sampled on the sparse Matsubara-frequency grid and
+defined on the k-grid, with the Matsubara-frequency axis first and
+the k-axes second and third (axes 1 and 2).</p></li>
+<li><p><strong>tau_value</strong> (<em>float</em>) – Imaginary time at which to evaluate the trace: 0 for
+the tau=0+ limit, or beta (1/T) for the tau=0- limit. Defaults to 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The trace evaluated at tau_value.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If statistic is not ‘f’ or ‘b’ (case-insensitive).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tpysc.Mesh2D.wn_to_tau">
+<span class="sig-name descname"><span class="pre">wn_to_tau</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">statistics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj_wn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#tpysc.Mesh2D.wn_to_tau" title="Link to this definition"></a></dt>
+<dd><p>Fourier transform an object from Matsubara frequency to imaginary time,
+via the intermediate representation basis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>statistics</strong> (<em>str</em>) – Statistic type, ‘f’ for fermionic or ‘b’ for
+bosonic. Case-insensitive.</p></li>
+<li><p><strong>obj_wn</strong> (<em>np.ndarray</em>) – Object sampled on the sparse Matsubara-frequency grid,
+with the frequency axis first.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The object evaluated on the sparse tau grid.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="dispersions">
+<h2>Dispersions<a class="headerlink" href="#dispersions" title="Link to this heading"></a></h2>
+<p>Tight-binding dispersions to evaluate on a Mesh2D’s k-grid.</p>
+<dl class="py function" id="module-tpysc.dispersions">
+<dt class="sig sig-object py" id="tpysc.dispersions.calcDispersion2DSquare">
+<span class="sig-prename descclassname"><span class="pre">tpysc.dispersions.</span></span><span class="sig-name descname"><span class="pre">calcDispersion2DSquare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#tpysc.Mesh2D" title="tpysc.mesh.Mesh2D"><span class="pre">Mesh2D</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tpp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#tpysc.dispersions.calcDispersion2DSquare" title="Link to this definition"></a></dt>
+<dd><p>Compute the tight-binding dispersion for a 2D square lattice.</p>
+<p>Evaluates <span class="math notranslate nohighlight">\(\epsilon(\mathbf{k})\)</span> on the k-grid held by <code class="docutils literal notranslate"><span class="pre">mesh</span></code>,
+including nearest-, next-nearest- (diagonal), and third-nearest-neighbor
+hopping:</p>
+<div class="math notranslate nohighlight">
+\[\epsilon(\mathbf{k}) = -2t\,(\cos(k_x) + \cos(k_y))
+    - 4t'\,\cos(k_x)\cos(k_y)
+    - 2t''\,(\cos(2 k_x) + \cos(2 k_y))\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mesh</strong> (<a class="reference internal" href="#tpysc.Mesh2D" title="tpysc.Mesh2D"><em>Mesh2D</em></a>) – Two-dimensional k-grid on which to evaluate the dispersion.</p></li>
+<li><p><strong>t</strong> (<em>float</em>) – Nearest-neighbor hopping amplitude. Defaults to 1.</p></li>
+<li><p><strong>tp</strong> (<em>float</em>) – Next-nearest-neighbor (diagonal) hopping amplitude. Defaults to 0.</p></li>
+<li><p><strong>tpp</strong> (<em>float</em>) – Third-nearest-neighbor hopping amplitude. Defaults to 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The dispersion evaluated on the mesh’s k-grid, with the same shape
+as <code class="docutils literal notranslate"><span class="pre">mesh.k1</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="green-s-functions">
+<h2>Green’s functions<a class="headerlink" href="#green-s-functions" title="Link to this heading"></a></h2>
+<p>Fermionic Green’s function utilities: building Matsubara Green’s functions, extracting
+the density, and transforming to real space.</p>
+<dl class="py function" id="module-tpysc.gf">
+<dt class="sig sig-object py" id="tpysc.gf.calcGiwnk">
+<span class="sig-prename descclassname"><span class="pre">tpysc.gf.</span></span><span class="sig-name descname"><span class="pre">calcGiwnk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#tpysc.Mesh2D" title="tpysc.mesh.Mesh2D"><span class="pre">Mesh2D</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">np.ndarray</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">complex</span></span></span><a class="headerlink" href="#tpysc.gf.calcGiwnk" title="Link to this definition"></a></dt>
+<dd><p>Calculate a ferminonic Matsubara Green’s function in the form 1/(iwn - z).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mesh</strong> (<a class="reference internal" href="#tpysc.Mesh2D" title="tpysc.Mesh2D"><em>Mesh2D</em></a>) – The 2D mesh defining the Matsubara frequency grid and temperature.</p></li>
+<li><p><strong>z</strong> (<em>numpy.ndarray</em><em> or </em><em>complex</em>) – The quantity subtracted from iwn (e.g. a dispersion or self-energy
+array), broadcastable against the fermionic Matsubara frequencies.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The Green’s function 1/(iwn - z), with Matsubara frequency as the
+leading axis.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray or complex</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tpysc.gf.calcNfromG">
+<span class="sig-prename descclassname"><span class="pre">tpysc.gf.</span></span><span class="sig-name descname"><span class="pre">calcNfromG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#tpysc.Mesh2D" title="tpysc.mesh.Mesh2D"><span class="pre">Mesh2D</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">np.ndarray</span></span></span><a class="headerlink" href="#tpysc.gf.calcNfromG" title="Link to this definition"></a></dt>
+<dd><p>Calculate the density from the fermionic Green’s function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mesh</strong> (<a class="reference internal" href="#tpysc.Mesh2D" title="tpysc.Mesh2D"><em>Mesh2D</em></a>) – The 2D mesh containing the Matsubara frequency grid and temperature.</p></li>
+<li><p><strong>z</strong> (<em>numpy.ndarray</em><em> or </em><em>complex</em>) – The quantity subtracted from iwn when building the Green’s function
+(e.g. a dispersion shifted by the chemical potential), passed through to
+<a class="reference internal" href="#tpysc.gf.calcGiwnk" title="tpysc.gf.calcGiwnk"><code class="xref py py-func docutils literal notranslate"><span class="pre">calcGiwnk()</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The density computed from the equal-time Green’s function.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float or numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tpysc.gf.transform_g_to_direct_space">
+<span class="sig-prename descclassname"><span class="pre">tpysc.gf.</span></span><span class="sig-name descname"><span class="pre">transform_g_to_direct_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mesh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#tpysc.Mesh2D" title="tpysc.mesh.Mesh2D"><span class="pre">Mesh2D</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">greens_function</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span></span></span><a class="headerlink" href="#tpysc.gf.transform_g_to_direct_space" title="Link to this definition"></a></dt>
+<dd><p>Converts a Green’s function G(k, iwn) into real space G(±r, tau).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mesh</strong> (<a class="reference internal" href="#tpysc.Mesh2D" title="tpysc.Mesh2D"><em>Mesh2D</em></a>) – The 2D mesh providing the frequency-to-time and momentum-to-real-
+space transforms.</p></li>
+<li><p><strong>greens_function</strong> (<em>numpy.ndarray</em>) – The Green’s function in momentum and Matsubara
+frequency space, G(k, iwn).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple <code class="docutils literal notranslate"><span class="pre">(g_tau_r,</span> <span class="pre">g_tau_mr)</span></code> of the Green’s function in real space
+and imaginary time, evaluated at +r and -r respectively.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="getting_started.html" class="btn btn-neutral float-left" title="Getting started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="theory_guide.html" class="btn btn-neutral float-right" title="Theory guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Jérôme Leblanc, Chloé-Aminata Gauvin-Ndiaye, Nicolas Martin, Camille Lahaie, André-Marie Tremblay, Moise Rousseau.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
